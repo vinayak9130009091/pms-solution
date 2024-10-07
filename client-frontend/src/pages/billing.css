@@ -1,0 +1,124 @@
+.billing-heding{display: flex;
+    justify-content: space-between;
+}
+
+.billing-heding h2{
+    font-family: sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.action-tittle{
+    display: flex;
+    gap: 20px;
+}
+
+.action-tittle p{
+    font-family: sans-serif;
+    font-size: 16px;
+    font-weight: 300;
+}
+
+
+.billing-bage{
+    background-color: #24c875;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    margin-left: 5px;
+    padding: 0 4px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+}
+.billing-list{
+    background-color: #f1f5f9;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: row;
+    box-shadow: 0 2px 12px rgb(71 85 105 / 20%);
+    margin-top: 10px;
+}
+
+.billing-1 {
+    width: 200px;
+    max-height: 148px;
+    min-height: 148px;
+    /* padding: 80px; */
+    background: #fff;
+    margin-left: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+
+.billing-icon {
+    color: #24c875;
+    margin-top: 10px;
+    margin-left: 10px;
+    font-size: 20px;
+}
+
+.billing-content span {
+    margin-top: 8px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.billing-subcontent{
+    font-size: 14px;
+    font-weight: 400;
+    color: #697991;
+    text-align: start;
+    margin-left: 12px;
+    margin-right: 12px;
+    margin-top: 8px;
+}
+
+.billing-nav{
+    padding: 10px;
+    border-bottom: 1px solid #cbd5e1;
+    /* margin-top: 20px; */
+    
+}
+
+
+.nav {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    width: auto;
+    display: inline-block;
+    background-color: #f0f0f0;
+}
+
+.ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+}
+
+.li {
+    margin-left: 10px;
+}
+
+.link {
+    text-decoration: none;
+    color: #333;
+    padding: 5px 10px;
+    border-radius: 3px;
+    transition: background-color 0.3s ease;
+}
+
+.billing-nav .active{
+    background-color: #007bff;
+    color: #fff;
+} 
+
