@@ -8,9 +8,10 @@ import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { Box, Typography, TextField, Button, Container, Paper ,Link,  } from '@mui/material';
+import { Box, Typography, TextField, Button, Container, Paper, Link } from "@mui/material";
 function ForgotPassword() {
   const USER_LOGIN_API = process.env.REACT_APP_USER_LOGIN;
+  const WINDOWS_PORT = process.env.REACT_APP_SERVER_URI;
   const history = useNavigate();
   const [inpval, setInpval] = useState({
     email: "",
@@ -44,11 +45,12 @@ function ForgotPassword() {
     } else {
       e.preventDefault();
 
-    //   const port = window.location.port;
+      //   const port = window.location.port;
 
-      const url = 'http://localhost:3000/resetpassword';
+      // REACT_APP_SERVER_URI
+      const url = `${WINDOWS_PORT}/resetpassword`;
 
-      const urlnew =`${USER_LOGIN_API}/forgotpassword/`;
+      const urlnew = `${USER_LOGIN_API}/forgotpassword/`;
       const data = await fetch(urlnew, {
         method: "POST",
         headers: {
@@ -128,53 +130,45 @@ function ForgotPassword() {
           <ToastContainer />
         </div>
       </div> */}
-          <Container maxWidth="md">
-              <Box display="flex" justifyContent="flex-start" sx={{ position: 'absolute', top: 0, left: 0, mt: 2 }}>
-                  <Box display="flex" alignItems="center" sx={{ mr: 2 }}>
-                      <img src={logo} alt="logo" style={{ height: '40px', marginRight: '5px' }} />
-                      <Typography variant="h6">PMS Solutions</Typography>
-                  </Box>
+      <Container maxWidth="md">
+        <Box display="flex" justifyContent="flex-start" sx={{ position: "absolute", top: 0, left: 0, mt: 2 }}>
+          <Box display="flex" alignItems="center" sx={{ mr: 2 }}>
+            <img src={logo} alt="logo" style={{ height: "40px", marginRight: "5px" }} />
+            <Typography variant="h6">PMS Solutions</Typography>
+          </Box>
+        </Box>
+
+        <Box display="flex" justifyContent="center" alignItems={"center"} sx={{ minHeight: "100vh" }}>
+          <Paper elevation={3} sx={{ p: 4, width: "100%", maxWidth: "500px" }}>
+            <Box>
+              <Typography variant="h5" sx={{ mb: 1 }}>
+                Reset your password
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 3 }}>
+                To reset your password, enter the email address you use to sign in
+              </Typography>
+            </Box>
+
+            <Box component="form" noValidate autoComplete="off">
+              <TextField fullWidth label="Email Address" name="email" value={inpval.email} onChange={setVal} placeholder="Email Address" sx={{ mb: 3 }} />
+
+              <Box display="flex" gap={2}>
+                <Button variant="contained" color="primary" onClick={getresetlink}>
+                  Get Reset Link
+                </Button>
+
+                <NavLink to="/" style={{ textDecoration: "none" }}>
+                  <Button variant="outlined" color="primary">
+                    Back to Login
+                  </Button>
+                </NavLink>
               </Box>
+            </Box>
+          </Paper>
+        </Box>
 
-              <Box display="flex" justifyContent="center" alignItems={'center'} sx={{ minHeight: '100vh' }}>
-                  <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: '500px' }}>
-                      <Box>
-                          <Typography variant="h5" sx={{ mb: 1 }}>Reset your password</Typography>
-                          <Typography variant="body1" sx={{ mb: 3 }}>
-                              To reset your password, enter the email address you use to sign in
-                          </Typography>
-                      </Box>
-
-                      <Box component="form" noValidate autoComplete="off">
-                          <TextField
-                              fullWidth
-                              label="Email Address"
-                              name="email"
-                              value={inpval.email}
-                              onChange={setVal}
-                              placeholder="Email Address"
-                              sx={{ mb: 3 }}
-                          />
-
-                          <Box display="flex" gap={2}>
-                              <Button variant="contained" color="primary" onClick={getresetlink}>
-                                  Get Reset Link
-                              </Button>
-
-                              <NavLink to="/" style={{ textDecoration: 'none' }}>
-                                  <Button variant="outlined" color="primary">
-                                      Back to Login
-                                  </Button>
-                              </NavLink>
-                          </Box>
-                      </Box>
-                  </Paper>
-              </Box>
-
-              <ToastContainer />
-          </Container>
-
-
+        <ToastContainer />
+      </Container>
     </>
   );
 }

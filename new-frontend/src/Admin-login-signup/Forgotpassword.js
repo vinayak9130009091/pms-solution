@@ -12,6 +12,7 @@ import micropms from "../Images/micropms.png";
 import { Box, Typography, TextField, Button, Container, Paper } from "@mui/material";
 function ForgotPassword() {
   const LOGIN_API = process.env.REACT_APP_USER_LOGIN;
+  const WINDOWS_PORT = process.env.REACT_APP_SERVER_URI;
   const history = useNavigate();
   const [inpval, setInpval] = useState({
     email: "",
@@ -47,7 +48,8 @@ function ForgotPassword() {
 
       //   const port = window.location.port;
 
-      const url = "http://localhost:3000/resetpassword";
+      // const url = "http://localhost:3000/resetpassword";
+      const url = `${WINDOWS_PORT}/resetpassword`;
 
       const urlnew = `${LOGIN_API}/forgotpassword/`;
       const data = await fetch(urlnew, {

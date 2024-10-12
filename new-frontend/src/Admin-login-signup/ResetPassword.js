@@ -153,7 +153,7 @@ function ResetPassword() {
   };
 
   const handleSubmit = () => {
-    history("/login");
+    history("/");
 
     if (password !== confirmPassword) {
       toast.error("Passwords do not match!");
