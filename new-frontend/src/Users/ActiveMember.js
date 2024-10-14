@@ -16,7 +16,30 @@ import Grid from "@mui/material/Unstable_Grid2";
 import { useNavigate } from "react-router-dom";
 
 const ActiveMember = () => {
+  // http://68.251.138.236:8880
+
+  const { logindata } = useContext(LoginContext);
+
+  const [userData, setUserData] = useState([]);
+  const fetchuserData = async () => {
+    try {
+      const url = `http://68.251.138.236:8880/common/user/userlist/list/${logindata.user.id}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      setUserData(data);
+      console.log(data.user.id);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchuserData();
+  }, []);
+  console.log(userData);
   const USER_API = process.env.REACT_APP_USER_URL;
+  const LOGIN_API = process.env.REACT_APP_USER_LOGIN;
+  const WINDOWS_PORT = process.env.REACT_APP_SERVER_URI;
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   // const [isNewDrawerOpen, setIsNewDrawerOpen] = useState(false);
@@ -38,28 +61,26 @@ const ActiveMember = () => {
     console.log("Delete", selectedRow);
     handleMenuClose();
   };
+  const fetchData = async () => {
+    try {
+      const requestOptions = {
+        method: "GET",
+        redirect: "follow",
+      };
 
+      const url = `${LOGIN_API}/admin/teammember/teammemberlist/list/true`;
+
+      const response = await fetch(url, requestOptions);
+      const result = await response.json();
+
+      setTeamMembers(result.teamMemberslist);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const requestOptions = {
-          method: "GET",
-          redirect: "follow",
-        };
-
-        const url = "http://127.0.0.1:8880/admin/teammember/teammemberlist/list";
-
-        const response = await fetch(url, requestOptions);
-        const result = await response.json();
-
-        setTeamMembers(result.teamMemberslist);
-        setLoading(false);
-      } catch (error) {
-        console.error(error);
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
@@ -76,32 +97,102 @@ const ActiveMember = () => {
   };
 
   const handleDeleteMember = async (_id) => {
-    console.log(_id);
+    // console.log(_id);
+
+    // const requestOptions = {
+    //   method: "DELETE",
+    //   redirect: "follow",
+    // };
+
+    // try {
+    //   const response = await fetch(`${LOGIN_API}/admin/teammember/${_id}`, requestOptions);
+    //   if (!response.ok) {
+    //     throw new Error(`Error: ${response.status} - ${response.statusText}`);
+    //   }
+    //   const result = await response.text();
+    //   console.log(result);
+    //   toast.success("Team Member deleted successfully!");
+    //   // fetchData();
+    // } catch (error) {
+    //   console.error(error);
+    //   toast.error("An error occurred while deleting the member");
+    // }
+    const isConfirmed = window.confirm("Are you sure you want to delete this account ?");
+    if (isConfirmed) {
+      const myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+
+      const raw = JSON.stringify({
+        active: false,
+      });
+
+      const requestOptions = {
+        method: "PATCH",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow",
+      };
+
+      fetch(`${LOGIN_API}/admin/teammember/${_id}`, requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+          console.log(result);
+          console.log(_id);
+
+          getTeamMenberUser(_id);
+          fetchData();
+        })
+        .catch((error) => console.error(error));
+    }
+  };
+  const getTeamMenberUser = async (id) => {
+    // /teammember
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
 
     const requestOptions = {
-      method: "DELETE",
+      method: "GET",
+      headers: myHeaders,
+
       redirect: "follow",
     };
 
-    try {
-      const response = await fetch(`http://127.0.0.1:8880/admin/teammember/${_id}`, requestOptions);
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status} - ${response.statusText}`);
-      }
-      const result = await response.text();
-      console.log(result);
-      toast.success("Team Member deleted successfully!");
-    } catch (error) {
-      console.error(error);
-      toast.error("An error occurred while deleting the member");
-    }
+    fetch(`${LOGIN_API}/admin/teammember/${id}`, requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        console.log(result.teamMember.userid);
+        HandleUserDeactivate(result.teamMember.userid);
+      })
+      .catch((error) => console.error(error));
   };
+  const HandleUserDeactivate = async (userid) => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
 
+    const raw = JSON.stringify({
+      active: false,
+    });
+
+    const requestOptions = {
+      method: "PATCH",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
+    console.log(userid);
+    fetch(`${LOGIN_API}/common/user/${userid}`, requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => console.error(error));
+  };
   const handleEdit = async (_id) => {
     setGetId(_id);
     console.log("Edit action triggered for template id: ", tempIdget);
     setOpenMenuId(false);
-    const response = await fetch("http://127.0.0.1:8880/admin/teammember/" + tempIdget);
+    const response = await fetch(`${LOGIN_API}/admin/teammember/` + tempIdget);
     if (!response.ok) {
       throw new Error("Failed to fetch  data");
     }
@@ -282,7 +373,7 @@ const ActiveMember = () => {
     };
 
     try {
-      const response = await fetch(`http://127.0.0.1:8880/common/user/email/getuserbyemail/${enteredEmail}`, requestOptions);
+      const response = await fetch(`${LOGIN_API}/common/user/email/getuserbyemail/${enteredEmail}`, requestOptions);
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
@@ -343,7 +434,7 @@ const ActiveMember = () => {
       body: raw,
       redirect: "follow",
     };
-    const url = "http://127.0.0.1:8880/common/login/signup/";
+    const url = `${LOGIN_API}/common/login/signup/`;
     fetch(url, requestOptions)
       .then((response) => response.text())
 
@@ -383,7 +474,8 @@ const ActiveMember = () => {
     const raw = JSON.stringify({
       email: email,
       // owneremail: logindata.user.id,
-      url: "http://localhost:3000/activate/",
+      // url: "http://localhost:3000/activate/",
+      url: `${WINDOWS_PORT}/activate/`,
     });
 
     console.log(raw);
@@ -394,7 +486,7 @@ const ActiveMember = () => {
       redirect: "follow",
     };
 
-    const url = "http://127.0.0.1:8880/teammembersavedemail/";
+    const url = `${LOGIN_API}/teammembersavedemail/`;
 
     fetch(url, requestOptions)
       .then((response) => response.text())
@@ -474,7 +566,7 @@ const ActiveMember = () => {
         body: raw,
         redirect: "follow",
       };
-      const url = `http://127.0.0.1:8880/admin/teammember/${tempIdget}`;
+      const url = `${LOGIN_API}/admin/teammember/${tempIdget}`;
 
       fetch(url, requestOptions)
         .then((response) => {
@@ -505,7 +597,7 @@ const ActiveMember = () => {
           return (
             <div>
               <div className="circle">{initials}</div>
-              {/* <Link to={`/updateteammember/${row.original?.id}`}>{`${firstName ? firstName : ""}  ${middleName ? middleName : ""} ${lastName ? lastName : ""}`}</Link> */}
+              <Link to={`/updateteammember/${row.original?.id}`}>{`${firstName ? firstName : ""}  ${middleName ? middleName : ""} ${lastName ? lastName : ""}`}</Link>{" "}
             </div>
           );
         },
@@ -616,14 +708,14 @@ const ActiveMember = () => {
               <Box>
                 <Box sx={{ width: "100%", mt: 3 }}>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} sm={4}>
+                    <Grid xs={12} sm={4}>
                       <Box>
                         <InputLabel sx={{ color: "black" }}>First name</InputLabel>
                         <TextField fullWidth onChange={handleFirstName} id="firstname" name="firstname" placeholder="First name" size="small" sx={{ mt: 1 }} value={firstName} />
                       </Box>
                       <Box style={{ color: "red", fontSize: "9px" }}>{firstNameValidation}</Box>
                     </Grid>
-                    <Grid item xs={12} sm={4}>
+                    <Grid xs={12} sm={4}>
                       <Box sx={{ mr: "15px" }}>
                         <InputLabel sx={{ color: "black" }}>Middle Name</InputLabel>
                         <TextField
@@ -639,7 +731,7 @@ const ActiveMember = () => {
                       </Box>
                     </Grid>
 
-                    <Grid item xs={12} sm={4}>
+                    <Grid xs={12} sm={4}>
                       <Box sx={{ mr: "15px" }}>
                         <InputLabel sx={{ color: "black" }}>Last Name</InputLabel>
                         <TextField fullWidth name="lastname" id="lastname" value={lastName} onChange={handleLastName} placeholder="Last Name" size="small" sx={{ mt: 1 }} />
@@ -691,140 +783,136 @@ const ActiveMember = () => {
 
                     <Box sx={{ flexGrow: 1 }}>
                       <Grid container spacing={2} columns={16}>
-                        <Grid item xs={8}>
-                          <Item>
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchPayments} checked={isCheckedPayments} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage payments</p>
-                            </Box>
+                        <Grid xs={8}>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchPayments} checked={isCheckedPayments} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage payments</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchPipelines} checked={isCheckedPipelines} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage pipelines</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchPipelines} checked={isCheckedPipelines} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage pipelines</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchTime} checked={isCheckedTimeEntries} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage time entries</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchTime} checked={isCheckedTimeEntries} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage time entries</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchAccounts} checked={isCheckedAccounts} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage accounts</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchAccounts} checked={isCheckedAccounts} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage accounts</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchTags} checked={isCheckedTags} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage tags</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchTags} checked={isCheckedTags} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage tags</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchOrganizers} checked={isCheckedOrganizers} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage organizers</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchOrganizers} checked={isCheckedOrganizers} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage organizers</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchFirmBalance} checked={isCheckedFirmBalance} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage firm balance</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchFirmBalance} checked={isCheckedFirmBalance} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage firm balance</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchContacts} checked={isCheckedContacts} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage contacts</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchContacts} checked={isCheckedContacts} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage contacts</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchSite} checked={isCheckedSite} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage site</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchSite} checked={isCheckedSite} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage site</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchServices} checked={isCheckedServices} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage services</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchServices} checked={isCheckedServices} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage services</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchFilterTemplates} checked={isCheckedFilterTemplates} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage public filter templates</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchFilterTemplates} checked={isCheckedFilterTemplates} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage public filter templates</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchTemplates} checked={isCheckedTemplates} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage templates</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchTemplates} checked={isCheckedTemplates} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage templates</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchMarketplace} checked={isCheckedMarketplace} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage marketplace</p>
-                            </Box>
-                          </Item>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchMarketplace} checked={isCheckedMarketplace} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage marketplace</p>
+                          </Box>
                         </Grid>
-                        <Grid item xs={8}>
-                          <Item>
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchInvoices} checked={isCheckedInvoices} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage invoices</p>
-                            </Box>
+                        <Grid xs={8}>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchInvoices} checked={isCheckedInvoices} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage invoices</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchJobRecurrences} checked={isCheckedJobRecurrences} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage job recurrences</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchJobRecurrences} checked={isCheckedJobRecurrences} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage job recurrences</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchRatesTimeEntries} checked={isCheckedRatesTimeEntries} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage rates in time entries</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchRatesTimeEntries} checked={isCheckedRatesTimeEntries} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage rates in time entries</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchAllAccounts} checked={isCheckedAllAccounts} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>View all accounts</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchAllAccounts} checked={isCheckedAllAccounts} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>View all accounts</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchCustomFields} checked={isCheckedCustomFields} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage custome fields</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchCustomFields} checked={isCheckedCustomFields} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage custome fields</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchTeammates} checked={isCheckedTeammates} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage teammates</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchTeammates} checked={isCheckedTeammates} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage teammates</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchAllContacts} checked={isCheckedAllContacts} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>View all contacts</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchAllContacts} checked={isCheckedAllContacts} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>View all contacts</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchProposals} checked={isCheckedProposals} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage proposals</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchProposals} checked={isCheckedProposals} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage proposals</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchEmail} checked={isCheckedEmail} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Mute emails</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchEmail} checked={isCheckedEmail} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Mute emails</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchOrgnizerAnswers} checked={isCheckedOrgnizerAnswers} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Edit orgnizer answers</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchOrgnizerAnswers} checked={isCheckedOrgnizerAnswers} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Edit orgnizer answers</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchDocuments} checked={isCheckedDocuments} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage documents</p>
-                            </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchDocuments} checked={isCheckedDocuments} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage documents</p>
+                          </Box>
 
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchTranscripts} checked={isCheckedTranscripts} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>Manage IRS Transcripts</p>
-                            </Box>
-                            <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
-                              <Switch onChange={handleSwitchViewReporting} checked={isCheckedViewReporting} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
-                              <p style={{ color: "black" }}>View reporting</p>
-                            </Box>
-                          </Item>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchTranscripts} checked={isCheckedTranscripts} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>Manage IRS Transcripts</p>
+                          </Box>
+                          <Box style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
+                            <Switch onChange={handleSwitchViewReporting} checked={isCheckedViewReporting} onColor="#3A91F5" onHandleColor="#FFF" handleDiameter={10} uncheckedIcon={false} checkedIcon={false} height={20} width={32} className="react-switch" />
+                            <p style={{ color: "black" }}>View reporting</p>
+                          </Box>
                         </Grid>
                       </Grid>
                     </Box>

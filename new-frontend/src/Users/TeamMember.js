@@ -1,7 +1,7 @@
 import { Box, Button, InputLabel, TextField, Divider, Select, MenuItem } from "@mui/material";
 import { NavLink, Outlet } from "react-router-dom";
 import Switch from "react-switch";
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import Drawer from "@mui/material/Drawer";
 import { useTheme, useMediaQuery, Typography } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
@@ -9,13 +9,39 @@ import { styled } from "@mui/material/styles";
 import { SlQuestion } from "react-icons/sl";
 import { ToastContainer, toast } from "react-toastify";
 import { LoginContext } from "../Sidebar/Context/Context";
+import { useNavigate } from "react-router-dom";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { unstable_ClassNameGenerator as ClassNameGenerator } from "@mui/material/className"; //autoclassnameGenerator
 ClassNameGenerator.configure((componentName) => `foo-bar-${componentName}`); //autoclassnameGenerator
 
 const TeamMember = () => {
+  const navigate = useNavigate();
   const LOGIN_API = process.env.REACT_APP_USER_LOGIN;
   const WINDOWS_PORT = process.env.REACT_APP_SERVER_URI;
+  const [loading, setLoading] = useState(true);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const fetchData = async () => {
+    try {
+      const requestOptions = {
+        method: "GET",
+        redirect: "follow",
+      };
+
+      const url = `${LOGIN_API}/admin/teammember/teammemberlist/list/true`;
+
+      const response = await fetch(url, requestOptions);
+      const result = await response.json();
+
+      setTeamMembers(result.teamMemberslist);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, []);
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const [isNewDrawerOpen, setIsNewDrawerOpen] = useState(false);
@@ -201,6 +227,7 @@ const TeamMember = () => {
   const [firstNameValidation, setFirstNameValidation] = useState("");
   const [lastNameValidation, setLastNameValidation] = useState("");
   const [emailValidation, setEmailValidation] = useState("");
+  const [teamMemberIdUpdate, setTeamMemberId] = useState("");
   //todo handle submit indivisual
   const handleSubmitTeamMember = () => {
     if (firstName === "") {
@@ -276,19 +303,23 @@ const TeamMember = () => {
           if (!response.ok) {
             toast.error("Team member with this email already  exist.");
           }
-          return response.text();
+          return response.json();
         })
         .then((result) => {
           console.log(result);
-          newUser();
+          console.log(result.teamMember._id);
+          setTeamMemberId(result.teamMember._id);
+
+          newUser(result.teamMember._id);
         })
 
         .catch((error) => console.error(error));
     }
   };
+  console.log(teamMemberIdUpdate);
   //************************ */
 
-  const newUser = () => {
+  const newUser = (teammemberuserid) => {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
@@ -307,16 +338,43 @@ const TeamMember = () => {
     };
     const url = `${LOGIN_API}/common/login/signup/`;
     fetch(url, requestOptions)
-      .then((response) => response.text())
+      .then((response) => response.json())
 
       .then((result) => {
         console.log(result);
+        console.log(result._id);
+        updateTeammemberUserid(result._id, teammemberuserid);
         sendmail();
       })
 
       .catch((error) => console.error(error));
   };
+  const updateTeammemberUserid = (UserId, teammemberuserid) => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
 
+    const raw = JSON.stringify({
+      userid: UserId,
+    });
+
+    const requestOptions = {
+      method: "PATCH",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
+    console.log(teammemberuserid);
+    fetch(`${LOGIN_API}/admin/teammember/${teammemberuserid}`, requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        toast.success("Team Member saved successfully!");
+        fetchData();
+        // navigate
+      })
+
+      .catch((error) => console.error(error));
+  };
   const { logindata } = useContext(LoginContext);
   const sendmail = () => {
     const myHeaders = new Headers();
@@ -346,7 +404,10 @@ const TeamMember = () => {
       .then((result) => {
         console.log(result);
         toast.success("Team Member saved successfully!");
-        window.location.reload();
+        handleNewDrawerClose();
+        fetchData();
+        navigate("/firmtemp/teammember/activemember");
+        // window.location.reload();
       })
       .catch((error) => {
         console.error(error);
@@ -393,7 +454,7 @@ const TeamMember = () => {
               },
             }}
           >
-            <NavLink to="/firmtemp/teammember/activemember">Active Members</NavLink>
+            {/* <NavLink to="/firmtemp/teammember/activemember">Active Members</NavLink> */}
           </Box>
           <Box>
             <Button onClick={setIsNewDrawerOpen} sx={{ whiteSpace: "nowrap" }} variant="contained" color="primary">
