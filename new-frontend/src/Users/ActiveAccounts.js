@@ -266,7 +266,7 @@ const ActiveAccounts = () => {
       })
       .then((result) => {
         console.log(result);
-        // toast("Password Updated successfully.")
+        toast("Password Updated successfully.");
       })
       .catch((error) => {
         console.error("Error updating password:", error.message);

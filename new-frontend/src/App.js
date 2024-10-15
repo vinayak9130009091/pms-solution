@@ -73,6 +73,7 @@ import ClientfacingJob from "./Templates/ClientFacingJobs/clientfacing";
 import ActiveAccounts from "./Users/ActiveAccounts";
 import UpdateTeamMember from "./Users/UpdateTeamMember";
 import ActiveMember from "./Users/ActiveMember";
+import Deactivatemember from "./Users/DeactivateMember";
 const App = () => {
   return (
     <BrowserRouter>
@@ -121,6 +122,8 @@ const App = () => {
           </Route>
           <Route path="/firmtemp/teammember" element={<TeamMember />}>
             <Route path="activemember" element={<ActiveMember />} />
+
+            <Route path="deactivatemember" element={<Deactivatemember />} />
           </Route>
           <Route path="/updateteammember/:id" element={<UpdateTeamMember />} />
           {/* <Route path='/firmtemp/services' element={<Services/>}/> */}

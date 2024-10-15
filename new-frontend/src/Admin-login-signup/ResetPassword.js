@@ -48,7 +48,7 @@ function ResetPassword() {
         };
         const url = `${LOGIN_API}/passwordupdate/`;
         fetch(url, requestOptions)
-          .then((response) => response.text())
+          .then((response) => response.json())
           .then((result) => console.log(result))
           .catch((error) => console.error(error));
       })
@@ -87,7 +87,7 @@ function ResetPassword() {
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        return response.text();
+        return response.json();
       })
       .then((result) => {
         console.log(result);

@@ -23,7 +23,7 @@ const ActiveMember = () => {
   const [userData, setUserData] = useState([]);
   const fetchuserData = async () => {
     try {
-      const url = `http://68.251.138.236:8880/common/user/userlist/list/${logindata.user.id}`;
+      const url = `http://68.251.138.236:8880/common/user/${logindata.user.id}`;
       const response = await fetch(url);
       const data = await response.json();
       setUserData(data);
@@ -61,6 +61,7 @@ const ActiveMember = () => {
     console.log("Delete", selectedRow);
     handleMenuClose();
   };
+
   const fetchData = async () => {
     try {
       const requestOptions = {
@@ -73,7 +74,21 @@ const ActiveMember = () => {
       const response = await fetch(url, requestOptions);
       const result = await response.json();
 
-      setTeamMembers(result.teamMemberslist);
+      const loggedInUser = {
+        _id: userData._id,
+        FirstName: userData.username, // Assuming you want to display the username in FirstName
+        MiddleName: "",
+        LastName: "",
+        // Name: userData.username,
+        Email: userData.email,
+        Role: userData.role,
+        has2FA: "Disabled",
+        Created: userData.updatedAt,
+      };
+
+      const updatedTeamMembers = [loggedInUser, ...result.teamMemberslist];
+
+      setTeamMembers(updatedTeamMembers);
       setLoading(false);
     } catch (error) {
       console.error(error);
@@ -81,8 +96,10 @@ const ActiveMember = () => {
     }
   };
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (userData) {
+      fetchData();
+    }
+  }, [userData]);
 
   const [tempIdget, setTempIdGet] = useState("");
   const [openMenuId, setOpenMenuId] = useState(null);
@@ -594,10 +611,15 @@ const ActiveMember = () => {
           const middleName = row.original?.MiddleName;
           const lastName = row.original?.LastName;
           const initials = `${firstName ? firstName[0] : ""}${lastName ? lastName[0] : ""}`;
+
+          const isLoggedInUser = row.index === 0;
+          // Route to Account Settings for first row, Team Member Update for others
+          const linkPath = isLoggedInUser ? `/settings/myaccount` : `/updateteammember/${row.original?.id}`;
           return (
             <div>
               <div className="circle">{initials}</div>
-              <Link to={`/updateteammember/${row.original?.id}`}>{`${firstName ? firstName : ""}  ${middleName ? middleName : ""} ${lastName ? lastName : ""}`}</Link>{" "}
+              <Link to={linkPath}>{`${firstName ? firstName : ""}  ${middleName ? middleName : ""} ${lastName ? lastName : ""}`}</Link>
+              {/* <Link to={`/updateteammember/${row.original?.id}`}>{`${firstName ? firstName : ""}  ${middleName ? middleName : ""} ${lastName ? lastName : ""}`}</Link>{" "} */}
             </div>
           );
         },

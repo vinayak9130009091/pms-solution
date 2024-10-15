@@ -24,6 +24,9 @@ const UpdateTeamMember = () => {
   const { id } = useParams();
   console.log(id);
   const [open, setOpen] = useState(false);
+
+  const [isEditable, setIsEditable] = useState(false);
+  const [showSaveButtons, setShowSaveButtons] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [editable, setEditable] = useState(false);
   const [logindetails, setLoginDetails] = useState(false);
@@ -32,9 +35,18 @@ const UpdateTeamMember = () => {
     setLoginDetails(true); // Set to true to show the text
   };
 
-  const handleOpen = () => {
+  // const handleOpen = () => {
+  //   setOpen(true);
+  //   setEditable(true); // Enable editing when modal is opened
+  // };
+  const handleEditClick = () => {
+    setIsEditable(true);
+    setShowSaveButtons(true);
     setOpen(true);
-    setEditable(true); // Enable editing when modal is opened
+  };
+  const handleCancelButtonClick = () => {
+    setShowSaveButtons(false);
+    setIsEditable(false);
   };
 
   const handleClose = () => {
@@ -48,9 +60,6 @@ const UpdateTeamMember = () => {
     }
   };
 
-  const handleDelete = () => {
-    setSelectedFile(null);
-  };
   //right side form
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -310,11 +319,10 @@ const UpdateTeamMember = () => {
       .then((response) => response.text())
       .then((result) => {
         console.log(result);
-        toast.success("Data updated successful!");
-        // window.location.reload();
-        setEditable(false);
-        // setIsEditable(false);
-        // setShowSaveButtons(false);
+        // toast.success("Data updated successful!");
+        updateProfilePicture();
+        setIsEditable(false);
+        setShowSaveButtons(false);
       })
       .catch((error) => {
         console.error(error);
@@ -327,6 +335,7 @@ const UpdateTeamMember = () => {
   useEffect(() => {
     fetchInvoiceTemp(id);
   }, []);
+  const [teamMemberUserId, setTeamMemberUserId] = useState("");
 
   const fetchInvoiceTemp = () => {
     const requestOptions = {
@@ -336,13 +345,13 @@ const UpdateTeamMember = () => {
     const url = `${LOGIN_API}/admin/teammember/`;
 
     fetch(url + id, requestOptions)
-      .then((response) => response.text())
+      .then((response) => response.json())
       .then((result) => {
-        const teamMembers = JSON.parse(result);
+        const teamMembers = result;
         console.log(teamMembers);
-        // console.log(invoiceResult.invoice)
+        console.log(teamMembers.teamMember.userid);
         setTeamMemeberData(teamMembers.teamMember);
-
+        setTeamMemberUserId(teamMembers.teamMember.userid);
         setFirstName(teamMembers.teamMember.firstName);
         setMiddleName(teamMembers.teamMember.middleName);
         setLastName(teamMembers.teamMember.lastName);
@@ -380,8 +389,35 @@ const UpdateTeamMember = () => {
         setIsCheckedTranscripts(teamMembers.teamMember.manageIRSTranscripts);
         setIsCheckedOrgnizerAnswers(teamMembers.teamMember.editOrganizersAnswers);
         setIsCheckedDocuments(teamMembers.teamMember.manageDocuments);
+
+        const profilePicFilename = teamMembers.teamMember.profilePicture.split("\\").pop(); // Extract filename
+
+        setProfilePicture(`http://68.251.138.236:8880/uploads/${profilePicFilename}`); // Use the correct URL
       })
       .catch((error) => console.error(error));
+  };
+  const [profilePicture, setProfilePicture] = useState("");
+  const updateProfilePicture = () => {
+    const formdata = new FormData();
+
+    if (selectedFile) {
+      // Check directly if selectedFile is set
+      formdata.append("ProfilePicture", selectedFile);
+      console.log(selectedFile); // Debugging: Log the selected file
+
+      const requestOptions = {
+        method: "PATCH",
+        body: formdata,
+        redirect: "follow",
+      };
+
+      fetch(`http://68.251.138.236:880/admin/teammember/${id}`, requestOptions)
+        .then((response) => response.text())
+        .then((result) => console.log(result))
+        .catch((error) => console.error(error));
+    } else {
+      console.error("No file selected"); // This will execute if no file is selected
+    }
   };
 
   // Function to check if email exists
@@ -460,6 +496,13 @@ const UpdateTeamMember = () => {
   const [passwordValid, setPasswordValid] = useState(false);
   const [passwordValidation, setPasswordValidation] = useState("");
   const [confirmPasswordValidation, setConfirmPasswordValidation] = useState("");
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+  const handleConfirmPasswordPaste = (e) => {
+    const pastedText = e.clipboardData.getData("text");
+    setConfirmPassword(pastedText);
+  };
   const handlePasswordChange = (e) => {
     const newPassword = e.target.value;
     setPassword(newPassword);
@@ -482,184 +525,141 @@ const UpdateTeamMember = () => {
       setPasswordValid(isValid);
     }
   };
-  const updatePassword = (_id, token) => {
+  // const { logindata } = useContext(LoginContext);
+  console.log(teamMemberUserId);
+  const updatePassword = () => {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
-    myHeaders.append("id", _id);
-    myHeaders.append("Authorization", token);
 
-    console.log(token);
     const raw = JSON.stringify({
-      password: confirmPassword,
+      email: email,
+      password: password,
+      cpassword: password,
+      userid: teamMemberUserId,
     });
+    console.log(raw);
     const requestOptions = {
-      method: "PATCH",
+      method: "POST",
       headers: myHeaders,
       body: raw,
       redirect: "follow",
     };
-    const urlupdateuserpassword = `${LOGIN_API}/common/user/password/updateuserpassword/`;
-    const baseUrl = urlupdateuserpassword;
-    const url = new URL(baseUrl);
-    console.log(url);
-    // url.searchParams.append("id", _id);
-    // url.searchParams.append("token", token);
 
-    fetch(url, requestOptions)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.text();
-      })
-      .then((result) => {
-        console.log(result);
-        toast.success("Password Updated successfully.");
-      })
-      .catch((error) => {
-        console.error("Error updating password:", error.message);
-      });
+    fetch("http://68.251.138.236:8880/teammemberpasswordupdate", requestOptions)
+      .then((response) => response.text())
+      .then((result) => console.log(result))
+      .catch((error) => console.error(error));
+  };
+  const handleDelete = () => {
+    setSelectedFile(null);
   };
 
   return (
-    <Container>
-      <Box display={"flex"} alignItems={"center"} mb={2}>
+    <Box sx={{ padding: 3 }}>
+      <Box display={"flex"} alignItems={"center"} mb={1} gap={2}>
         <ArrowBackIcon sx={{ color: "#1976d3", fontSize: 50 }} />
-        <Typography variant="h4">
-          <b>Update Team Member</b>
-        </Typography>
+        <Typography variant="h4">Update Team Member</Typography>
       </Box>
 
       <Divider />
-      <Box mt={2} flexGrow={1}>
+      <Box mt={2} flexGrow={1} padding={2}>
         <Grid container spacing={2} columns={16}>
           <Grid xs={8}>
             <Box display={"flex"} alignItems={"center"} justifyContent={"space-between"}>
               <Typography>
                 <b>Personal details</b>
               </Typography>
-              {/* <Box
-                  sx={{
-                    width: 70,
-                    height: 70,
-                    borderRadius: "50%",
-                    overflow: "hidden",
-                    border: "2px solid #d0d0d9",
-                  }}
-                >
-                 
-                  {selectedFile && <img src={URL.createObjectURL(selectedFile)} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
-                </Box> */}
+
+              <Box
+                sx={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  border: "2px solid #d0d0d9",
+                }}
+              >
+                {profilePicture && (
+                  <img
+                    src={profilePicture} // Ensure this URL is accessible from the client
+                    alt="Profile"
+                    style={{
+                      width: "200%", // Set width to 100% of the container
+                      height: "200%", // Set height to 100% of the container
+                      objectFit: "cover", // Cover the entire area without distortion
+                    }}
+                  />
+                )}
+              </Box>
+
               <Box>
-                <IconButton onClick={handleOpen}>
+                <IconButton onClick={handleEditClick}>
                   <BorderColorIcon sx={{ color: "#1976d3" }} />
                 </IconButton>
               </Box>
-
-              {/* <Modal open={open} onClose={handleClose}>
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      bgcolor: "background.paper",
-                      borderRadius: 2,
-                      boxShadow: 24,
-                      p: 4,
-                      textAlign: "center",
-                    }}
-                  >
-                    <Box>
-                      <Button variant="contained" component="label" startIcon={<CloudUploadIcon />} sx={{ mb: 2 }}>
-                        Upload
-                        <input type="file" hidden onChange={handleFileChange} />
-                      </Button>
-
-                      {selectedFile && (
-                        <Box mt={2}>
-                          <Typography variant="body2">Selected file: {selectedFile.name}</Typography>
-                          <Button variant="outlined" startIcon={<DeleteIcon />} onClick={handleDelete} sx={{ mt: 2 }}>
-                            Delete
-                          </Button>
-                        </Box>
-                      )}
-                    </Box>
-                    <Button variant="contained" onClick={handleClose} sx={{ mt: 3 }}>
-                      Close
+              <Modal open={open} onClose={handleClose}>
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    bgcolor: "background.paper",
+                    borderRadius: 2,
+                    boxShadow: 24,
+                    p: 4,
+                    textAlign: "center",
+                  }}
+                >
+                  <Box>
+                    <Button variant="contained" component="label" startIcon={<CloudUploadIcon />} sx={{ mb: 2 }}>
+                      Upload Photo
+                      <input type="file" accept="image/*" hidden onChange={handleFileChange} />
                     </Button>
+
+                    {selectedFile && (
+                      <Box mt={2}>
+                        <Typography variant="body2">Selected file: {selectedFile.name}</Typography>
+                        <Button variant="outlined" startIcon={<DeleteIcon />} onClick={handleDelete} sx={{ mt: 2 }}>
+                          Delete
+                        </Button>
+                      </Box>
+                    )}
                   </Box>
-                </Modal> */}
-            </Box>
-
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Box sx={{ flexGrow: 1 }}>
-                <label className="tag-input-label">First Name</label>
-                <TextField
-                  placeholder="First Name"
-                  onChange={(e) => setFirstName(e.target.value)}
-                  value={firstName}
-                  fullWidth
-                  margin="normal"
-                  size="small"
-                  sx={{ backgroundColor: "#fff" }}
-                  disabled={!editable} // Control editability
-                />
-              </Box>
-              <Box sx={{ flexGrow: 1 }}>
-                <label className="tag-input-label">Middle Name</label>
-                <TextField
-                  placeholder="Middle Name"
-                  onChange={handleMiddleName}
-                  value={middleName}
-                  fullWidth
-                  margin="normal"
-                  size="small"
-                  sx={{ backgroundColor: "#fff" }}
-                  disabled={!editable} // Control editability
-                />
-              </Box>
-              <Box sx={{ flexGrow: 1 }}>
-                <label className="tag-input-label">Last Name</label>
-                <TextField
-                  placeholder="Last Name"
-                  fullWidth
-                  margin="normal"
-                  value={lastName}
-                  onChange={handleLastName}
-                  size="small"
-                  sx={{ backgroundColor: "#fff" }}
-                  disabled={!editable} // Control editability
-                />
-              </Box>
-            </Box>
-
-            <Box sx={{ flexGrow: 1 }}>
-              <label className="tag-input-label">Phone Number</label>
-              <TextField
-                placeholder="Phone Number"
-                fullWidth
-                margin="normal"
-                size="small"
-                sx={{ backgroundColor: "#fff" }}
-                disabled={!editable} // Control editability
-                value={phonenumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-              />
-            </Box>
-            {editable && ( // Show only if editable is true
-              <Box display={"flex"} alignItems={"center"} gap={2}>
-                <Box>
-                  <Button variant="contained" sx={{ mt: 2 }} onClick={handleSaveButtonClick}>
-                    Save
-                  </Button>
-                </Box>
-
-                <Box>
-                  <Button variant="outlined" sx={{ mt: 2 }}>
+                  <Button variant="contained" onClick={handleClose} sx={{ mt: 3 }}>
                     Close
                   </Button>
                 </Box>
+              </Modal>
+            </Box>
+
+            <Box sx={{ display: "flex", gap: 2 }} mt={2}>
+              <Box>
+                <Typography>First Name</Typography>
+                <TextField value={firstName} margin="normal" onChange={(e) => setFirstName(e.target.value)} placeholder="First Name" fullWidth size="small" disabled={!isEditable} />
+              </Box>
+              <Box>
+                <Typography>Middle Name</Typography>
+                <TextField value={middleName} margin="normal" onChange={(e) => setMiddleName(e.target.value)} placeholder="Middle Name" fullWidth size="small" disabled={!isEditable} />
+              </Box>
+              <Box>
+                <Typography>Last Name</Typography>
+                <TextField value={lastName} margin="normal" onChange={(e) => setLastName(e.target.value)} placeholder="Last Name" fullWidth size="small" disabled={!isEditable} />
+              </Box>
+            </Box>
+            <Box>
+              <Typography>Phone Number</Typography>
+              <TextField margin="normal" value={phonenumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="Phone Number" fullWidth size="small" disabled={!isEditable} />
+            </Box>
+
+            {showSaveButtons && (
+              <Box display="flex" alignItems="center" gap={2} mt={2}>
+                <Button variant="contained" onClick={handleSaveButtonClick}>
+                  Save
+                </Button>
+                <Button variant="outlined" onClick={handleCancelButtonClick}>
+                  Cancel
+                </Button>
               </Box>
             )}
 
@@ -674,114 +674,44 @@ const UpdateTeamMember = () => {
 
             <Box sx={{ flexGrow: 1 }}>
               <label className="tag-input-label">Email</label>
-              <TextField placeholder="Email" fullWidth margin="normal" size="small" value={email} onChange={handleEmail} sx={{ backgroundColor: "#fff" }} />
+              <TextField placeholder="Email" disabled fullWidth margin="normal" size="small" value={email} onChange={handleEmail} sx={{ backgroundColor: "#fff" }} />
             </Box>
             {logindetails && (
               <>
-                {/* <Box>
-                  <Box>
-                    <FormControl variant="outlined">
-                      <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
-                      <OutlinedInput
-                        size="small"
-                        id="outlined-adornment-password"
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={handlePasswordChange} // onChange should be on the input, not IconButton
-                        endAdornment={
-                          <InputAdornment position="end">
-                            <IconButton aria-label="toggle password visibility" onClick={handleClickShowPassword} onMouseDown={handleMouseDownPassword} onMouseUp={handleMouseUpPassword} edge="end">
-                              {showPassword ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                          </InputAdornment>
-                        }
-                        label="Password"
-                      />
-                    </FormControl>
-                    <div style={{ color: "red", fontSize: "9px" }}>{passwordValidation}</div>
-                  </Box>
-
-                  <Box mt={3}>
-                    <FormControl variant="outlined">
-                      <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
-                      <OutlinedInput
-                        size="small"
-                        id="outlined-adornment-password"
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={handlePasswordChange} // onChange should be on the input, not IconButton
-                        endAdornment={
-                          <InputAdornment position="end">
-                            <IconButton aria-label="toggle password visibility" onClick={handleClickShowPassword} onMouseDown={handleMouseDownPassword} onMouseUp={handleMouseUpPassword} edge="end">
-                              {showPassword ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                          </InputAdornment>
-                        }
-                        label="Password"
-                      />
-                    </FormControl>
-                    <div style={{ color: "red", fontSize: "9px" }}>{confirmPasswordValidation}</div>
-                  </Box>
-
-                  <div className="password-validation-checklist">
-                    <p>Your password must contain:</p>
-                    <ul>
-                      <li className={password.length >= 8 ? "valid" : ""}>
-                        <IoIosCheckmarkCircleOutline className="check-icon" /> Minimum 8 characters
-                      </li>
-                      <li className={/\d/.test(password) ? "valid" : ""}>
-                        <IoIosCheckmarkCircleOutline className="check-icon" /> At least one number
-                      </li>
-                      <li className={/[a-zA-Z]/.test(password) ? "valid" : ""}>
-                        <IoIosCheckmarkCircleOutline className="check-icon" /> At least one letter
-                      </li>
-                    </ul>
-                  </div>
-                </Box> */}
                 <Box>
-                  <Box>
-                    <FormControl sx={{ m: 1, width: "25ch" }} variant="outlined">
-                      <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
-                      <OutlinedInput
-                        id="outlined-adornment-password"
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        fullWidth
-                        onChange={handlePasswordChange}
-                        endAdornment={
-                          <InputAdornment position="end">
-                            <IconButton aria-label="toggle password visibility" onClick={handleClickShowPassword} onMouseDown={handleMouseDownPassword}>
-                              {showPassword ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                          </InputAdornment>
-                        }
-                        label="Password"
-                        sx={{ width: "100%" }}
-                      />
-                    </FormControl>
+                  <Box mt={2}>
+                    <Typography htmlFor="password">Password</Typography>
+                    <OutlinedInput
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      size="small"
+                      placeholder="Password"
+                      onChange={handlePasswordChange}
+                      sx={{ width: "100%", borderRadius: "10px", mt: 1 }}
+                      endAdornment={
+                        <InputAdornment position="end" sx={{ cursor: "pointer" }} onClick={handleTogglePasswordVisibility}>
+                          {showPassword ? <Visibility /> : <VisibilityOff />}
+                        </InputAdornment>
+                      }
+                    />
                               
                   </Box>
                   <Box>
-                    <FormControl sx={{ m: 1, width: "25ch" }} variant="outlined">
-                      <InputLabel htmlFor="outlined-adornment-confirm-password">Confirm Password</InputLabel>
-                      <OutlinedInput
-                        id="outlined-adornment-confirm-password"
-                        type={showConfirmPassword ? "text" : "password"}
-                        value={confirmPassword}
-                        fullWidth
-                        onChange={handleConfirmPasswordChange}
-                        endAdornment={
-                          <InputAdornment position="end">
-                            <IconButton aria-label="toggle password visibility" onClick={handleClickConfirmShowPassword} onMouseDown={handleMouseDownConfirmPassword}>
-                              {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                          </InputAdornment>
-                        }
-                        label="Confirm Password"
-                        sx={{ width: "100%" }}
-                      />
-                    </FormControl>
-                              
+                    <Typography htmlFor="confirmPassword">Confirm Password</Typography>
+                    <OutlinedInput
+                      type={showPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      size="small"
+                      placeholder="Confirm Password"
+                      onChange={handleConfirmPasswordChange}
+                      onPaste={handleConfirmPasswordPaste} // Allow pasting
+                      sx={{ width: "100%", borderRadius: "10px", mt: 1 }}
+                      endAdornment={
+                        <InputAdornment position="end" sx={{ cursor: "pointer" }} onClick={handleTogglePasswordVisibility}>
+                          {showPassword ? <Visibility /> : <VisibilityOff />}
+                        </InputAdornment>
+                      }
+                    />
                   </Box>
                 </Box>
                 <Box mt={2} display="flex" alignItems="center" gap={3}>
@@ -790,7 +720,7 @@ const UpdateTeamMember = () => {
                   </Button>
                   <Button
                     variant="outlined"
-                    onClick={handleDelete}
+
                     // Adding right margin to separate buttons
                   >
                     Cancel
@@ -1061,7 +991,7 @@ const UpdateTeamMember = () => {
           </Grid>
         </Grid>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

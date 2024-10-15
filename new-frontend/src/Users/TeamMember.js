@@ -454,7 +454,8 @@ const TeamMember = () => {
               },
             }}
           >
-            {/* <NavLink to="/firmtemp/teammember/activemember">Active Members</NavLink> */}
+             <NavLink to="/firmtemp/teammember/activemember">Active Members</NavLink> 
+             <NavLink to="/firmtemp/teammember/deactivatemember">Deactivated Members</NavLink> 
           </Box>
           <Box>
             <Button onClick={setIsNewDrawerOpen} sx={{ whiteSpace: "nowrap" }} variant="contained" color="primary">
