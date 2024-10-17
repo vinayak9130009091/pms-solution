@@ -19,11 +19,11 @@ const ActiveMember = () => {
   // http://68.251.138.236:8880
 
   const { logindata } = useContext(LoginContext);
-
+  // const LOGIN_API = process.env.REACT_APP_USER_LOGIN;
   const [userData, setUserData] = useState([]);
   const fetchuserData = async () => {
     try {
-      const url = `http://68.251.138.236:8880/common/user/${logindata.user.id}`;
+      const url = `${LOGIN_API}/common/user/${logindata.user.id}`;
       const response = await fetch(url);
       const data = await response.json();
       setUserData(data);
@@ -202,6 +202,7 @@ const ActiveMember = () => {
       .then((response) => response.json())
       .then((result) => {
         console.log(result);
+        toast.success("Team Member Deactivated Successfully");
       })
       .catch((error) => console.error(error));
   };
@@ -457,7 +458,9 @@ const ActiveMember = () => {
 
       .then((result) => {
         console.log(result);
-        sendmail();
+        toast.success("Team Member Updated Successfully");
+        handleNewDrawerClose();
+        // sendmail();
       })
 
       .catch((error) => console.error(error));
@@ -594,6 +597,8 @@ const ActiveMember = () => {
         })
         .then((result) => {
           console.log(result);
+          // toast.success("Team Member Upadted Successfully");
+          // handleNewDrawerClose();
           newUser();
         })
 
@@ -679,7 +684,7 @@ const ActiveMember = () => {
                   Edit
                 </Typography>
                 <Typography sx={{ fontSize: "12px", color: "red", fontWeight: "bold" }} onClick={() => handleDeleteMember(row.original.id)}>
-                  Delete
+                  Deactivate
                 </Typography>
               </Box>
             )}
@@ -949,7 +954,7 @@ const ActiveMember = () => {
                 onClick={handleUpdateTeamMember}
                 color="primary"
               >
-                Send Invite
+                Save
               </Button>
               <Button variant="outlined" onClick={handleNewDrawerClose}>
                 Cancel

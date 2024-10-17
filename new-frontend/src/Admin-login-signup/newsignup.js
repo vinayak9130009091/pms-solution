@@ -612,6 +612,7 @@ const MyForm = () => {
       //   history("/login");
     }
   };
+  const [adminIdUpdate, setAdminIdUpdate] = useState("");
   const adminalldata = () => {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
@@ -648,12 +649,13 @@ const MyForm = () => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
-        return response.text();
+        return response.json();
       })
       .then((result) => {
         console.log(result);
-
-        newUser();
+        console.log(result.admin._id);
+        setAdminIdUpdate(result.admin._id);
+        newUser(result.admin._id);
 
         toast.success("Signup successful!");
       })
@@ -662,7 +664,7 @@ const MyForm = () => {
         toast.error("Error signing up. Please try again.", error);
       });
   };
-
+  console.log(adminIdUpdate);
   //************************ */
   const userCreatedmail = () => {
     const myHeaders = new Headers();
@@ -682,7 +684,7 @@ const MyForm = () => {
     };
     const Url = `${LOGIN_API}/usersavedemail/`;
     fetch(Url, requestOptions)
-      .then((response) => response.text())
+      .then((response) => response.json())
 
       .then((result) => {
         console.log(result);
@@ -690,7 +692,8 @@ const MyForm = () => {
       .catch((error) => console.error(error));
   };
   //************************ */
-  const newUser = () => {
+  // const [newUserId, setNewUserId] = useState("");
+  const newUser = (adminUserId) => {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
@@ -698,7 +701,7 @@ const MyForm = () => {
       username: firmName,
       email: inpval.email,
       password: inppass.password,
-      role: roleOption,
+      role: "Admin",
     });
 
     const requestOptions = {
@@ -707,17 +710,172 @@ const MyForm = () => {
       body: raw,
       redirect: "follow",
     };
+    console.log(raw);
     const Url = `${LOGIN_API}/common/login/signup/`;
     fetch(Url, requestOptions)
-      .then((response) => response.text())
+      .then((response) => response.json())
 
       .then((result) => {
         console.log(result);
+        console.log(result._id);
+        updateAdminUserId(result._id, adminUserId);
+        insertNotificationAccess(result._id);
+        sendFirmSettings(result._id);
         userCreatedmail();
       })
 
       .catch((error) => console.error(error));
   };
+
+  const insertNotificationAccess = (userid) => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify({
+      userId: userid,
+      notifications: [
+        {
+          notificationDescription: "Invoices",
+          inbox: false,
+          email: false,
+        },
+        {
+          notificationDescription: "Payments",
+          inbox: false,
+          email: false,
+        },
+        {
+          notificationDescription: "Organizers",
+          inbox: false,
+          email: false,
+        },
+        {
+          notificationDescription: "Uploads",
+          inbox: false,
+          email: false,
+        },
+        {
+          notificationDescription: "E-signatures",
+          inbox: false,
+          email: false,
+        },
+        {
+          notificationDescription: "Approvals",
+          inbox: false,
+          email: false,
+        },
+        {
+          notificationDescription: "Done uploading",
+          inbox: false,
+          email: false,
+        },
+        {
+          notificationDescription: "Tasks",
+          inbox: false,
+          email: false,
+        },
+        {
+          notificationDescription: "Messages",
+          inbox: false,
+          email: false,
+        },
+        {
+          notificationDescription: "New mail",
+          inbox: false,
+          email: false,
+        },
+        {
+          notificationDescription: "Proposals",
+          inbox: false,
+          email: false,
+        },
+        {
+          notificationDescription: "Jobs",
+          inbox: false,
+          email: false,
+        },
+        {
+          notificationDescription: "Mentions",
+          inbox: false,
+          email: false,
+        },
+        {
+          notificationDescription: "SMS",
+          inbox: false,
+          email: false,
+        },
+      ],
+      active: true,
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
+
+    fetch("http://68.251.138.236:8880/admin/notification", requestOptions)
+      .then((response) => response.json())
+      .then((result) => console.log(result))
+      .catch((error) => console.error(error));
+  };
+
+  const updateAdminUserId = (UserId, adminUserId) => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify({
+      userid: UserId,
+    });
+
+    const requestOptions = {
+      method: "PATCH",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
+    console.log(adminUserId);
+    // const Url = `${LOGIN_API}/admin/adminsignup`;
+    fetch(`${LOGIN_API}/admin/adminsignup/${adminUserId}`, requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+      })
+
+      .catch((error) => console.error(error));
+  };
+
+  const sendFirmSettings = (userid) => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    const raw = JSON.stringify({
+      firmName: firmName,
+      defaultreplytoemails: inpval.email,
+      state: selectedState,
+      phoneNumber: phoneNumber,
+      firmURL: combinedData.url,
+      language: language.label,
+      adminuserid: userid,
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
+
+    fetch(`${LOGIN_API}/firmsetting/`, requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log("Response data:", result);
+      })
+      .catch((error) => {
+        console.error("Error occurred:", error);
+      });
+  };
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 

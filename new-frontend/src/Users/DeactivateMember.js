@@ -3,7 +3,9 @@ import { Link } from "react-router-dom";
 import { MaterialReactTable, useMaterialReactTable } from "material-react-table";
 import { IconButton, Box, Typography } from "@mui/material";
 import { CiMenuKebab } from "react-icons/ci";
+import { toast, ToastContainer } from "react-toastify";
 const DeactivateMember = () => {
+  const LOGIN_API = process.env.REACT_APP_USER_LOGIN;
   const handleRestoreMember = async (id) => {
     const isConfirmed = window.confirm("Are you sure you want to Restore this account ?");
     if (isConfirmed) {
@@ -21,13 +23,14 @@ const DeactivateMember = () => {
         redirect: "follow",
       };
 
-      fetch(`http://68.251.138.236:8880/admin/teammember/${id}`, requestOptions)
+      fetch(`${LOGIN_API}/admin/teammember/${id}`, requestOptions)
         .then((response) => response.json())
         .then((result) => {
           console.log(result);
           console.log(id);
 
           fetchDeactivateData();
+          toast.success("Team Member Activated Successfully");
         })
         .catch((error) => console.error(error));
     }
@@ -43,7 +46,7 @@ const DeactivateMember = () => {
         redirect: "follow",
       };
 
-      const url = "http://68.251.138.236:8880/admin/teammember/teammemberlist/list/false";
+      const url = `${LOGIN_API}/admin/teammember/teammemberlist/list/false`;
 
       const response = await fetch(url, requestOptions);
       const result = await response.json();
@@ -158,6 +161,7 @@ const DeactivateMember = () => {
   return (
     <div>
       <MaterialReactTable table={table} />
+      <ToastContainer />
     </div>
   );
 };

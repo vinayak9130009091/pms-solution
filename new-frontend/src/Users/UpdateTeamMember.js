@@ -53,12 +53,45 @@ const UpdateTeamMember = () => {
     setOpen(false);
   };
 
+  const [error, setError] = useState(""); // Error state
+
   const handleFileChange = (event) => {
     const file = event.target.files[0];
+
     if (file) {
-      setSelectedFile(file);
+      // Check if file size exceeds 1MB (1048576 bytes)
+      if (file.size > 1048576) {
+        setError("File size exceeds 1MB. Please upload a smaller file.");
+        return;
+      }
+
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+
+      img.onload = () => {
+        const width = img.width;
+        const height = img.height;
+
+        // Check if the image size exceeds 512x512 pixels
+        if (width > 512 || height > 512) {
+          setError("Image dimensions exceed 512x512 pixels. Please resize the image.");
+        } else {
+          // File is valid, proceed with setting the file
+          setError("");
+          setSelectedFile(file);
+          setProfilePicture(URL.createObjectURL(file)); // For displaying the preview
+        }
+      };
     }
   };
+
+  // const handleFileChange = (event) => {
+  //   const file = event.target.files[0];
+  //   console.log(file); // Check if the file is being logged correctly
+  //   if (file) {
+  //     setSelectedFile(file);
+  //   }
+  // };
 
   //right side form
   const theme = useTheme();
@@ -392,7 +425,7 @@ const UpdateTeamMember = () => {
 
         const profilePicFilename = teamMembers.teamMember.profilePicture.split("\\").pop(); // Extract filename
 
-        setProfilePicture(`http://68.251.138.236:8880/uploads/${profilePicFilename}`); // Use the correct URL
+        setProfilePicture(`${LOGIN_API}/uploads/${profilePicFilename}`); // Use the correct URL
       })
       .catch((error) => console.error(error));
   };
@@ -411,7 +444,7 @@ const UpdateTeamMember = () => {
         redirect: "follow",
       };
 
-      fetch(`http://68.251.138.236:880/admin/teammember/${id}`, requestOptions)
+      fetch(`${LOGIN_API}/admin/teammember/${id}`, requestOptions)
         .then((response) => response.text())
         .then((result) => console.log(result))
         .catch((error) => console.error(error));
@@ -485,8 +518,8 @@ const UpdateTeamMember = () => {
 
   /// Integration
   const { _id, token } = useParams();
-  console.log(_id);
-  console.log(token);
+  // console.log(_id);
+  // console.log(token);
 
   const [values, setValues] = useState();
   const [passShow, setPassShow] = useState(false);
@@ -545,7 +578,7 @@ const UpdateTeamMember = () => {
       redirect: "follow",
     };
 
-    fetch("http://68.251.138.236:8880/teammemberpasswordupdate", requestOptions)
+    fetch(`${LOGIN_API}/teammemberpasswordupdate`, requestOptions)
       .then((response) => response.text())
       .then((result) => console.log(result))
       .catch((error) => console.error(error));
@@ -584,9 +617,9 @@ const UpdateTeamMember = () => {
                     src={profilePicture} // Ensure this URL is accessible from the client
                     alt="Profile"
                     style={{
-                      width: "200%", // Set width to 100% of the container
-                      height: "200%", // Set height to 100% of the container
-                      objectFit: "cover", // Cover the entire area without distortion
+                      width: "100%", // Set width to 100% of the container
+                      height: "100%", // Set height to 100% of the container
+                      objectFit: "contain", // Cover the entire area without distortion
                     }}
                   />
                 )}
@@ -597,7 +630,7 @@ const UpdateTeamMember = () => {
                   <BorderColorIcon sx={{ color: "#1976d3" }} />
                 </IconButton>
               </Box>
-              <Modal open={open} onClose={handleClose}>
+              {/* <Modal open={open} onClose={handleClose}>
                 <Box
                   sx={{
                     position: "absolute",
@@ -618,6 +651,46 @@ const UpdateTeamMember = () => {
                     </Button>
 
                     {selectedFile && (
+                      <Box mt={2}>
+                        <Typography variant="body2">Selected file: {selectedFile.name}</Typography>
+                        <Button variant="outlined" startIcon={<DeleteIcon />} onClick={handleDelete} sx={{ mt: 2 }}>
+                          Delete
+                        </Button>
+                      </Box>
+                    )}
+                  </Box>
+                  <Button variant="contained" onClick={handleClose} sx={{ mt: 3 }}>
+                    Close
+                  </Button>
+                </Box>
+              </Modal> */}
+              <Modal open={open} onClose={handleClose}>
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    bgcolor: "background.paper",
+                    borderRadius: 2,
+                    boxShadow: 24,
+                    p: 4,
+                    textAlign: "center",
+                  }}
+                >
+                  <Box>
+                    <Button variant="contained" component="label" startIcon={<CloudUploadIcon />} sx={{ mb: 2 }}>
+                      Upload Photo
+                      <input type="file" accept="image/*" hidden onChange={handleFileChange} />
+                    </Button>
+
+                    {error && (
+                      <Typography variant="body2" color="error">
+                        {error}
+                      </Typography>
+                    )}
+
+                    {selectedFile && !error && (
                       <Box mt={2}>
                         <Typography variant="body2">Selected file: {selectedFile.name}</Typography>
                         <Button variant="outlined" startIcon={<DeleteIcon />} onClick={handleDelete} sx={{ mt: 2 }}>
