@@ -367,8 +367,7 @@ const Service = () => {
                         width: isSmallScreen ? '100%' : '650px',
 
                     },
-                }}
-            >
+                }}>
                 <Box role="presentation" sx={{ borderRadius: isSmallScreen ? '0' : '15px' }}>
                     <Box>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, borderBottom: '1px solid grey' }}>
@@ -521,8 +520,7 @@ const Service = () => {
                                             width: isSmallScreen ? '100%' : '650px',
                                             maxWidth: '100%',
                                         },
-                                    }}
-                                >
+                                    }} >
 
                                     <Box>
 

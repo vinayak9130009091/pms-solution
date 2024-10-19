@@ -865,6 +865,7 @@ const MyForm = () => {
       body: raw,
       redirect: "follow",
     };
+    console.log(raw);
 
     fetch(`${LOGIN_API}/firmsetting/`, requestOptions)
       .then((response) => response.json())
