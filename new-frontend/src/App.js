@@ -75,6 +75,7 @@ import ActiveAccounts from "./Users/ActiveAccounts";
 import UpdateTeamMember from "./Users/UpdateTeamMember";
 import ActiveMember from "./Users/ActiveMember";
 import Deactivatemember from "./Users/DeactivateMember";
+import Stages from "./Pages/stagesAutomation";
 const App = () => {
   return (
     <BrowserRouter>
@@ -90,7 +91,7 @@ const App = () => {
           <Route path="/docs" element={<Docs />} />
           <Route path="clients/accounts" element={<Account />} />
           <Route path="clients/contacts" element={<Contact />} />
-
+          <Route path="stages" element={<Stages />} />
           <Route path="addJobs" element={<CreateJob />} />
           <Route path="billing/Invoices" element={<Invoices />} />
           <Route path="workflow/tasks" element={<WorkflowTask />} />

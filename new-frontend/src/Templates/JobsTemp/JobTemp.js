@@ -373,6 +373,7 @@ const JobTemp = ({ charLimit = 4000 }) => {
     setduein("");
     setClientDescription("");
     setClientFacingStatus(false);
+    setComments([]);
   };
   // showinclientportal,jobnameforclient,clientfacingstatus,
   const createjobtemp = () => {
@@ -395,7 +396,7 @@ const JobTemp = ({ charLimit = 4000 }) => {
         comments: comments,
         showinclientportal: clientFacingStatus,
         jobnameforclient: inputText,
-        clientfacingstatus: selectedJob.value,
+        clientfacingstatus: selectedJob?.value,
         startdate: startDate,
         enddate: dueDate,
         clientfacingDescription: clientDescription,
@@ -450,7 +451,7 @@ const JobTemp = ({ charLimit = 4000 }) => {
         comments: comments,
         showinclientportal: clientFacingStatus,
         jobnameforclient: inputText,
-        clientfacingstatus: selectedJob.value,
+        clientfacingstatus: selectedJob?.value,
         clientfacingDescription: clientDescription,
       });
       console.log(raw);
