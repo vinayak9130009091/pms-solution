@@ -1363,7 +1363,7 @@ const InvoiceTemp = () => {
                   onChange={(e) => setSelectedRowData({ ...selectedRowData, description: e.target.value })}
                 />
               </Box>
-              <Box sx={{ width: "100%", mt: 2 }}>
+              {/* <Box sx={{ width: "100%", mt: 2 }}>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
                     <Box>
@@ -1408,8 +1408,49 @@ const InvoiceTemp = () => {
                     </Box>
                   </Grid>
                 </Grid>
-              </Box>
+              </Box> */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Box width="50%">
+                  <Typography sx={{ color: "black" }}>Rate</Typography>
+                  <TextField
+                    fullWidth
+                    name="Rate"
+                    placeholder="Rate"
+                    size="small"
+                    sx={{ mt: 1 }}
+                    fullWidth
+                    value={selectedRowData?.rate || ""} // Use selected row data
+                    onChange={(e) => setSelectedRowData({ ...selectedRowData, rate: e.target.value })}
+                  />
+                </Box>
 
+                <Box width="50%">
+                  <Typography sx={{ color: "black" }}>Rate Type</Typography>
+                  <Autocomplete
+                    size="small"
+                    fullWidth
+                    sx={{ mt: 1 }}
+                    options={options}
+                    getOptionLabel={(option) => option?.label || ""}
+                    value={selectedOption}
+                    onChange={handleRateTypeChange}
+                    renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Select Rate Type" />}
+                    isOptionEqualToValue={(option, value) => option.value === value.value}
+                    renderOption={(props, option) => (
+                      <Box
+                        component="li"
+                        {...props}
+                        sx={{
+                          margin: "4px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <Typography>{option.label}</Typography>
+                      </Box>
+                    )}
+                  />
+                </Box>
+              </Box>
               <Box mt={2}>
                 <FormControlLabel
                   control={

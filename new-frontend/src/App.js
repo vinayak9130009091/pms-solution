@@ -22,6 +22,7 @@ import OrganizersTempUpdate from "./Templates/OrganizersTemp/OrganizersTempUpdat
 import RecurringInvoiceTemp from "./Templates/RecurringInvoiceTemp/RecurringInvoiceTemp";
 import SignatureTemp from "./Templates/SignatureTemp/SignatureTemp";
 import ProposalTemp from "./Templates/ProposalsTemp/ProposalTemp";
+import ProposalTempUpdate from "./Templates/ProposalsTemp/PrposalTempUpdate";
 import CreateJob from "./Jobs/CreateJob";
 import Docs from "./Pages/Docs";
 import AccountDash from "./Pages/AccountDash.js";
@@ -119,6 +120,7 @@ const App = () => {
             <Route path="recurring-invoices" element={<RecurringInvoiceTemp />} />
             <Route path="signatures" element={<SignatureTemp />} />
             <Route path="proposals" element={<ProposalTemp />} />
+            <Route path="proposals/ProposalTempUpdate/:_id" element={<ProposalTempUpdate />} />
           </Route>
           <Route path="/firmtemp/teammember" element={<TeamMember />}>
             <Route path="activemember" element={<ActiveMember />} />
