@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Box, Button, Typography, Container, Paper, Autocomplete, TextField, Switch, FormControlLabel, Divider, IconButton, useMediaQuery, useTheme, Alert } from "@mui/material";
+import { Box, ListItemText, Button, Drawer, List, ListItem, Typography, Container, Paper, Autocomplete, TextField, Switch, FormControlLabel, Divider, IconButton, useMediaQuery, useTheme, Alert } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { LuPlusCircle, LuPenLine } from "react-icons/lu";
@@ -9,6 +9,7 @@ import axios from "axios";
 import { MaterialReactTable, useMaterialReactTable } from "material-react-table";
 import { CiMenuKebab } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
+import SendEmail from "../Automations/SendEmail";
 const PipelineTemp = () => {
   const PIPELINE_API = process.env.REACT_APP_PIPELINE_TEMP_URL;
   const theme = useTheme();
@@ -17,28 +18,33 @@ const PipelineTemp = () => {
   const [showForm, setShowForm] = useState(false);
   const [pipelineName, setPipelineName] = useState("");
   const [isFormDirty, setIsFormDirty] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(null);
   const handleCreatePipeline = () => {
     setShowForm(true); // Show the form when button is clicked
   };
-
   const [stages, setStages] = useState([]);
-
   const handleAddStage = () => {
-    const newStage = { name: "", conditions: [], automations: [], autoMove: false, showDropdown: false, activeAction: null };
-    setStages([...stages, newStage]);
+    const newStage = {
+      name: "",
+      conditions: [],
+      automations: [],
+      autoMove: false,
+      showDropdown: false,
+      activeAction: null,
+    };
+    console.log("New stage to be added:", newStage); // Check what newStage looks like
+    setStages([...stages, newStage]); // Update the stages
   };
   const handleStageNameChange = (e, index) => {
     const newStages = [...stages]; // Create a copy of the stages array
     newStages[index].name = e.target.value; // Update the name of the specific stage
     setStages(newStages); // Update the state with the modified stages array
   };
-
   const handleDeleteStage = (index) => {
     const updatedStages = [...stages];
     updatedStages.splice(index, 1);
     setStages(updatedStages);
   };
-
   const handleAutoMoveChange = (index) => {
     const updatedStages = stages.map((stage, idx) => (idx === index ? { ...stage, autoMove: !stage.autoMove } : stage));
     setStages(updatedStages);
@@ -46,10 +52,9 @@ const PipelineTemp = () => {
   const createPipe = () => {
     const data = {
       pipelineName: pipelineName,
-
       stages: stages,
     };
-
+    console.log(data);
     const config = {
       method: "post",
       maxBodyLength: Infinity,
@@ -59,38 +64,28 @@ const PipelineTemp = () => {
       },
       data: data,
     };
-
     axios
       .request(config)
       .then((response) => {
         console.log(JSON.stringify(response.data));
-        // Display success toast
         fetchPipelineData();
         toast.success("Pipeline created successfully");
         setShowForm(false);
         clearForm();
-        // Additional success handling here
       })
       .catch((error) => {
         console.log(error);
-        // Display error toast
         toast.error("Failed to create pipeline");
-        // Additional error handling here
       });
   };
-
   const clearForm = () => {
     setPipelineName("");
-
     setStages([]);
   };
-
   const [pipelineData, setPipelineData] = useState([]);
-
   useEffect(() => {
     fetchPipelineData();
   }, []);
-
   const fetchPipelineData = async () => {
     try {
       const url = `${PIPELINE_API}/workflow/pipeline/pipelines`;
@@ -104,82 +99,19 @@ const PipelineTemp = () => {
       console.error("Error fetching pipeline data:", error);
     }
   };
-  const handleEdit = (_id) => {
-    // Implement logic for editing here
-    // console.log("Edit action triggered for template id: ", templateId);
-    navigate("PipelineTemplateUpdate/" + _id);
-  };
-
-  //delete template
-  const handleDelete = async (_id) => {
-    // Show a confirmation prompt
-    const isConfirmed = window.confirm("Are you sure you want to delete this pipeline?");
-
-    // Proceed with deletion if confirmed
-    if (isConfirmed) {
-      const config = {
-        method: "delete",
-        maxBodyLength: Infinity,
-        url: `${PIPELINE_API}/workflow/pipeline/pipeline/${_id}`,
-        headers: {},
-      };
-
-      try {
-        const response = await axios.request(config);
-        console.log("Delete response:", response.data);
-        toast.success("Item deleted successfully");
-        fetchPipelineData();
-        // Optionally, you can refresh the data or update the state to reflect the deletion
-      } catch (error) {
-        console.error("Error deleting pipeline:", error);
-      }
-    }
-  };
-
-  const [tempIdget, setTempIdGet] = useState("");
-  const [openMenuId, setOpenMenuId] = useState(null);
-  const toggleMenu = (_id) => {
-    setOpenMenuId(openMenuId === _id ? null : _id);
-    setTempIdGet(_id);
-  };
-  // console.log(tempIdget)
   const columns = useMemo(
     () => [
       {
         accessorKey: "pipelineName",
         header: "Name",
-        Cell: ({ row }) => (
-          <Typography sx={{ color: "#2c59fa", cursor: "pointer", fontWeight: "bold" }} onClick={() => handleEdit(row.original._id)}>
-            {row.original.pipelineName}
-          </Typography>
-        ),
+        Cell: ({ row }) => <Typography sx={{ color: "#2c59fa", cursor: "pointer", fontWeight: "bold" }}>{row.original.pipelineName}</Typography>,
       },
       {
         accessorKey: "Setting",
         header: "Setting",
-        Cell: ({ row }) => (
-          <IconButton onClick={() => toggleMenu(row.original._id)} style={{ color: "#2c59fa" }}>
-            <CiMenuKebab style={{ fontSize: "25px" }} />
-            {openMenuId === row.original._id && (
-              <Box sx={{ position: "absolute", zIndex: 1, backgroundColor: "#fff", boxShadow: 1, borderRadius: 1, p: 1, left: "30px", m: 2 }}>
-                <Typography
-                  sx={{ fontSize: "12px", fontWeight: "bold" }}
-                  onClick={() => {
-                    handleEdit(row.original._id);
-                  }}
-                >
-                  Edit
-                </Typography>
-                <Typography sx={{ fontSize: "12px", color: "red", fontWeight: "bold" }} onClick={() => handleDelete(row.original._id)}>
-                  Delete
-                </Typography>
-              </Box>
-            )}
-          </IconButton>
-        ),
       },
     ],
-    [openMenuId]
+    []
   );
 
   const table = useMaterialReactTable({
@@ -218,11 +150,9 @@ const PipelineTemp = () => {
       setIsFormDirty(false);
     }
   }, [pipelineName]);
-
   // automations
   const [activeAction, setActiveAction] = useState(null);
   const [isAutoFormOpen, setAutoFormOpen] = useState(false);
-  // const [showAutoMoveDropdown, setShowAutoMoveDropdown] = useState(false);
   const [showAutoMoveDropdown, setShowAutoMoveDropdown] = useState({});
   const handleToggleAutoMoveDropdown = (index) => {
     setShowAutoMoveDropdown((prev) => ({
@@ -232,7 +162,7 @@ const PipelineTemp = () => {
   };
   const automoveActions = ["Send invoice", "Send email"];
   const handleActionSelect = (action) => {
-    setActiveAction(action);
+    setSelectedAction(action);
     toggleForm();
     const newItemNumber = items.length + 1;
     const newItem = { id: newItemNumber, action };
@@ -241,7 +171,7 @@ const PipelineTemp = () => {
   };
   const handleFormClose = () => {
     setAutoFormOpen(false);
-    setActiveAction(null);
+
     setItems([]);
   };
 
@@ -249,7 +179,6 @@ const PipelineTemp = () => {
     setAutoFormOpen(!isAutoFormOpen);
     setShowAutoMoveDropdown(false);
   };
-
   const [items, setItems] = useState([]);
   const [showAutoMovesDropdown, setShowAutoMovesDropdown] = useState(false);
   const automoveActionsForm = ["Send invoice", "Send email"];
@@ -259,7 +188,18 @@ const PipelineTemp = () => {
     setItems([...items, newItem]);
     setShowAutoMovesDropdown(false);
   };
-
+  const getActionComponent = () => {
+    switch (selectedAction) {
+      case "Send email":
+        return <>
+        
+        </>;
+      case "Send invoice":
+        return <div>Send Invoice Form Here</div>;
+      default:
+        return null;
+    }
+  };
   return (
     <Container>
       {!showForm ? (
@@ -390,6 +330,19 @@ const PipelineTemp = () => {
                         </Box>
                       </Paper>
                     ))}
+
+                    <Drawer anchor="right" open={isAutoFormOpen} onClose={toggleForm}>
+                      <Box sx={{ width: 500, p: 2 }}>
+                        <Box display="flex" justifyContent="space-between">
+                          <Typography variant="h6">Automation Actions</Typography>
+                          <Button onClick={toggleForm}>Close</Button>
+                        </Box>
+
+                        <Box border="2px solid red" padding={3}>
+                          <List>{getActionComponent()}</List>
+                        </Box>
+                      </Box>
+                    </Drawer>
                     <Box mt={3}>
                       <Button variant="contained" startIcon={<LuPlusCircle />} onClick={handleAddStage}>
                         Add stage

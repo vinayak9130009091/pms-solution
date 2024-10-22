@@ -426,7 +426,7 @@ const JobTemplateUpdate = ({ charLimit = 4000 }) => {
       enddate: DueDateNew,
       showinclientportal: clientFacingStatus,
       jobnameforclient: inputText,
-      clientfacingstatus: selectedJob.value,
+      clientfacingstatus: selectedJob?.value,
       clientfacingDescription: clientDescription,
     });
 
@@ -477,7 +477,7 @@ const JobTemplateUpdate = ({ charLimit = 4000 }) => {
       enddate: DueDateNew,
       showinclientportal: clientFacingStatus,
       jobnameforclient: inputText,
-      clientfacingstatus: selectedJob.value,
+      clientfacingstatus: selectedJob?.value,
       clientfacingDescription: clientDescription,
     });
     console.log(raw);

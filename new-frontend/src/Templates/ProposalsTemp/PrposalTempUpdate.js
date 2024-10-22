@@ -440,7 +440,7 @@ const MyStepperUpdate = () => {
       // Set template name and proposal name
       settemplatename(proposalesandelsTemplate.templatename);
       setProposalName(proposalesandelsTemplate.proposalname);
-      setTaxRate(proposalesandelsTemplate.summary.taxRate);
+
       // Map team members for Autocomplete
       const mappedOptions = proposalesandelsTemplate.teammember.map((member) => ({
         label: member.username, // Display username
@@ -472,7 +472,9 @@ const MyStepperUpdate = () => {
       setPaymentDueDate(proposalesandelsTemplate.paymentduedate);
       setPaymentAmount(proposalesandelsTemplate.paymentamount);
       // Set invoice data
-
+      console.log(proposalesandelsTemplate.servicesandinvoices);
+      // if (proposalesandelsTemplate.servicesandinvoices === "true") {
+      console.log(proposalesandelsTemplate.servicesandinvoices);
       if (proposalesandelsTemplate.Additemizedserviceswithoutcreatinginvoices === "service") {
         console.log(proposalesandelsTemplate.lineItems);
 
@@ -489,7 +491,7 @@ const MyStepperUpdate = () => {
         setRows(mappedLineItems);
         // summary(proposalesandelsTemplate.summary)
       }
-
+      setTaxRate(proposalesandelsTemplate.summary.taxRate);
       const invoiceData = {
         servicesandinvoicetempid: proposalesandelsTemplate.servicesandinvoicetempid,
         invoicetemplatename: proposalesandelsTemplate.invoicetemplatename,
@@ -502,7 +504,7 @@ const MyStepperUpdate = () => {
         summary: proposalesandelsTemplate.summary,
         notetoclient: proposalesandelsTemplate.notetoclient,
       };
-      setIsUpdating(true);
+
       setInvoiceData(invoiceData);
 
       console.log(invoiceData);
@@ -514,7 +516,8 @@ const MyStepperUpdate = () => {
         setActiveOption("service");
         setAddInvoiceitemized(proposalesandelsTemplate.Additemizedserviceswithoutcreatinginvoices);
       }
-
+      // }
+      setIsUpdating(true);
       // Set the rows (line items)
       // setRows(proposalesandelsTemplate.lineItems);
     } catch (error) {
@@ -552,6 +555,51 @@ const MyStepperUpdate = () => {
     if (!validateForm()) {
       // toast.error("Please fix the validation errors.");
       return;
+    }
+    if (activeStep !== 3) {
+      const options = {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          templatename: templatename,
+          teammember: combinedTeamMemberValues,
+          proposalname: proposalName,
+          introduction: stepsVisibility.Introduction,
+          terms: stepsVisibility.Terms,
+          servicesandinvoices: stepsVisibility.ServicesInvoices,
+          introductiontext: introductionContent,
+          // servicesandinvoiceid: "66fa83ffe6e0f4ca11c2204d",
+          custommessageinemail: stepsVisibility.CustomEmailMessage,
+          custommessageinemailtext: description,
+          reminders: stepsVisibility.Reminders,
+          daysuntilnextreminder: daysuntilNextReminder,
+          numberofreminder: noOfReminder,
+          introductiontextname: introductionname,
+          introductiontext: introductionContent,
+          termsandconditionsname: termsandconditionname,
+          termsandconditions: termsContent,
+          active: true,
+        }),
+      };
+      console.log(options.body);
+      fetch(`${PROPOSAL_API}/workflow/proposalesandels/proposalesandels/${_id}`, options)
+        .then((response) => response.json())
+        .then((result) => {
+          console.log(result.message);
+          // toast.success("Invoice created successfully");
+          if (result && result.message === "ProposalesAndEls Template Updated successfully") {
+            // fetchPrprosalsAllData();
+            navigate("/firmtemp/templates/proposals");
+            toast.success("ProposalesAndEls Template Updated successfully");
+          } else {
+            toast.error(result.message || "Failed to Updated ProposalesAndEls Template");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
     }
     if (activeOption === "invoice") {
       const lineItems = invoiceDataUpdate.lineItems.map((item) => ({

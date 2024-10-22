@@ -460,6 +460,51 @@ const MyStepper = () => {
       return;
     }
     console.log(invoiceData);
+
+    if (activeStep !== 3) {
+      const options = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          templatename: templatename,
+          teammember: combinedTeamMemberValues,
+          proposalname: proposalName,
+          introduction: stepsVisibility.Introduction,
+          terms: stepsVisibility.Terms,
+          servicesandinvoices: stepsVisibility.ServicesInvoices,
+          introductiontext: introductionContent,
+          // servicesandinvoiceid: "66fa83ffe6e0f4ca11c2204d",
+          custommessageinemail: stepsVisibility.CustomEmailMessage,
+          custommessageinemailtext: description,
+          reminders: stepsVisibility.Reminders,
+          daysuntilnextreminder: daysuntilNextReminder,
+          numberofreminder: noOfReminder,
+          introductiontextname: introductionname,
+          introductiontext: introductionContent,
+          termsandconditionsname: termsandconditionname,
+          termsandconditions: termsContent,
+          active: true,
+        }),
+      };
+      console.log(options.body);
+      fetch(`${PROPOSAL_API}/workflow/proposalesandels/proposalesandels`, options)
+        .then((response) => response.json())
+        .then((result) => {
+          console.log(result.message);
+          // toast.success("Invoice created successfully");
+          if (result && result.message === "ProposalesAndEls Template created successfully") {
+            fetchPrprosalsAllData();
+            toast.success("ProposalesAndEls Template created successfully");
+          } else {
+            toast.error(result.message || "Failed to create ProposalesAndEls Template");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    }
     if (activeOption === "invoice") {
       const options = {
         method: "POST",
