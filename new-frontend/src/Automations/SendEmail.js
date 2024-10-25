@@ -6,7 +6,7 @@ import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import { Box, Button, Checkbox, Chip, Drawer, IconButton, TextField, Typography, Grid } from "@mui/material";
 
-const SendEmail = ({ handleSaveData }) => {
+const SendEmail = () => {
   const EMAIL_API = process.env.REACT_APP_EMAIL_TEMP_URL;
   const TAGS_API = process.env.REACT_APP_TAGS_TEMP_URL;
   const [isConditionsFormOpen, setIsConditionsFormOpen] = useState(false);
@@ -108,17 +108,14 @@ const SendEmail = ({ handleSaveData }) => {
       {tag.tagName}
     </Box>
   ));
-
-  const handleSave = () => {
-    if (selectedEmailTemplate || selectedTags.length > 0) {
-      const savedData = {
-        emailTemplate: selectedEmailTemplate,
-        tags: selectedTags,
-      };
-      handleSaveData(savedData); // Pass data to the parent component
-    }
-  };
-  console.log(savedData);
+ const handelSaveSendEmail = () =>{
+  const emailTemp ={
+    emailTempId: setSelectedEmailTemplate.value,
+    emailTempName: setSelectedEmailTemplate.label,
+    conditionTagName: selectedTagElements
+  }
+  console.log('send email data :', emailTemp)
+ }
   return (
     <>
       <Box>
@@ -141,11 +138,6 @@ const SendEmail = ({ handleSaveData }) => {
             <Typography onClick={handleAddConditions} sx={{ cursor: "pointer", color: "blue", fontWeight: "bold", mt: 1 }}>
               Add conditions
             </Typography>
-          </Grid>
-          <Grid mt={2}>
-            <Button variant="contained" color="primary" onClick={handleSave}>
-              Save
-            </Button>
           </Grid>
         </Grid>
       </Box>

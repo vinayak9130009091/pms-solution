@@ -522,6 +522,7 @@ const Invoices = ({ charLimit = 4000 }) => {
       const data = await response.json();
 
       setBillingInvoice(data.invoice);
+      
     } catch (error) {
       console.error("Error fetching email templates:", error);
     }

@@ -403,19 +403,21 @@ const PipelineTemp = () => {
   const [activeAction, setActiveAction] = useState(null);
   const [isAutoFormOpen, setAutoFormOpen] = useState(false);
   // const [showAutoMoveDropdown, setShowAutoMoveDropdown] = useState(false);
+  const [activeStageIndex, setActiveStageIndex] = useState(null);
   const [showAutoMoveDropdown, setShowAutoMoveDropdown] = useState({});
   const handleToggleAutoMoveDropdown = (index) => {
     setShowAutoMoveDropdown((prev) => ({
       ...prev,
       [index]: !prev[index], // Toggle the dropdown for the selected stage
     }));
+    setActiveStageIndex(index);
   };
-  const automoveActions = ["Send invoice", "Send email"];
+  const automoveActions = ["Send invoice", "Send email", "Send Organizer"];
   const handleActionSelect = (action, index) => {
     setActiveAction(action);
     toggleForm(index);
     const newItemNumber = items.length + 1;
-    const newItem = { id: newItemNumber, action };
+    const newItem = { id: `${newItemNumber}-${Date.now()}`, action };
     setItems([...items, newItem]);
     setShowAutoMovesDropdown(false);
   };
@@ -426,6 +428,12 @@ const PipelineTemp = () => {
   };
 
   const toggleForm = (index) => {
+    setItems([]); // Clear previous items
+    // setAutomations((prevAutomations) => {
+    //   const updatedAutomations = [...prevAutomations];
+    //   updatedAutomations[index] = []; // Ensure no previous automations appear
+    //   return updatedAutomations;
+    // });
     setAutoFormOpen((prev) => ({
       ...prev,
       [index]: !prev[index],
@@ -434,12 +442,19 @@ const PipelineTemp = () => {
     setShowAutoMoveDropdown(false);
   };
 
+  // setSelectedEmailTemplate("");
+  // setSelectedEmailTemplate("");
+  // setSelectedInvoiceTags([]);
+  // setSelectedTags([]);
+  // setItems([]);
   const [items, setItems] = useState([]);
   const [showAutoMovesDropdown, setShowAutoMovesDropdown] = useState(false);
-  const automoveActionsForm = ["Send invoice", "Send email"];
+  const automoveActionsForm = ["Send invoice", "Send email", "Send Organizer"];
   const handleAddItems = (action) => {
+    // const newItemNumber = items.length + 1;
+    // const newItem = { id: newItemNumber, action };
     const newItemNumber = items.length + 1;
-    const newItem = { id: newItemNumber, action };
+    const newItem = { id: `${newItemNumber}-${Date.now()}`, action };
     setItems([...items, newItem]);
     setShowAutoMovesDropdown(false);
   };
@@ -590,6 +605,9 @@ const PipelineTemp = () => {
             </Drawer>
           </>
         );
+
+      case "Send Organizer":
+        return <>Send Organizer</>;
       // Add cases for other actions here
       default:
         return null;
@@ -605,58 +623,105 @@ const PipelineTemp = () => {
   // Function to render header content based on action
 
   const [automations, setAutomations] = useState([]);
-  const [stageAutomations, setStageAutomations] = useState({});
+  // const [stageAutomations, setStageAutomations] = useState({});
 
-  useEffect(() => {
-    // Initialize state for each stage
-    const initialAutomations = stages.reduce((acc, stage, index) => {
-      acc[index] = []; // Assuming each stage starts with no automations
-      return acc;
-    }, {});
-    setStageAutomations(initialAutomations);
-  }, [stages]);
+  // useEffect(() => {
+  //   // Initialize state for each stage
+  //   const initialAutomations = stages.reduce((acc, stage, index) => {
+  //     acc[index] = []; // Assuming each stage starts with no automations
+  //     return acc;
+  //   }, {});
+  //   setStageAutomations(initialAutomations);
+  // }, [stages]);
 
+  //   const handleSaveAutomations = (stageIndex) => {
+  //     // Construct saved automations specific to the current stage
+  //     const savedAutomations = items.map((item) => {
+  //       const automationData = {
+  //         id: item.id,
+  //         action: item.action,
+  //       };
+
+  //       // Capture additional data for "Send Email" action
+  //       if (item.action === "Send email") {
+  //         automationData.templates = selectedEmailTemplate; // Store selected template
+  //         automationData.conditions = selectedTags; // Store selected tags (conditions)
+  //       }
+  //       if (item.action === "Send invoice") {
+  //         automationData.templates = selectedInvoiceTemplate; // Store selected template
+  //         automationData.conditions = selectedInvoiceTags; // Store selected tags (conditions)
+  //       }
+
+  //       return automationData;
+  //     });
+
+  //     setAutoFormOpen(false);
+
+  //     setStages((prevStages) => {
+  //       const updatedStages = [...prevStages];
+  //       updatedStages[stageIndex] = {
+  //         ...updatedStages[stageIndex],
+  //         automations: savedAutomations, // Update the automations field for the stage
+  //       };
+
+  //       return updatedStages;
+  //     });
+  //     setAutomations((prevAutomations) => {
+  //       const updatedAutomations = [...prevAutomations];
+  //       updatedAutomations[stageIndex] = savedAutomations; // Save the automations for the specific stage
+
+  //       return updatedAutomations; // Return the updated automations
+  //     });
+
+  //     console.log("Saved Automations for Stage", stageIndex, ":", savedAutomations);
+  //     setItems([]);
+  //   };
   const handleSaveAutomations = (stageIndex) => {
     // Construct saved automations specific to the current stage
-    const savedAutomations = items.map((item) => {
+    const newAutomations = items.map((item) => {
       const automationData = {
         id: item.id,
         action: item.action,
       };
 
-      // Capture additional data for "Send Email" action
+      // Capture additional data for specific actions
       if (item.action === "Send email") {
-        automationData.templates = selectedEmailTemplate; // Store selected template
-        automationData.conditions = selectedTags; // Store selected tags (conditions)
+        automationData.templates = selectedEmailTemplate;
+        automationData.conditions = selectedTags;
       }
       if (item.action === "Send invoice") {
-        automationData.templates = selectedInvoiceTemplate; // Store selected template
-        automationData.conditions = selectedInvoiceTags; // Store selected tags (conditions)
+        automationData.templates = selectedInvoiceTemplate;
+        automationData.conditions = selectedInvoiceTags;
       }
 
       return automationData;
     });
 
-    setAutoFormOpen(false);
-
+    // Retrieve existing automations for this stage, if any, and append new automations
     setStages((prevStages) => {
       const updatedStages = [...prevStages];
+      const existingAutomations = updatedStages[stageIndex].automations || [];
       updatedStages[stageIndex] = {
         ...updatedStages[stageIndex],
-        automations: savedAutomations, // Update the automations field for the stage
+        automations: [...existingAutomations, ...newAutomations], // Append new automations
       };
 
       return updatedStages;
     });
+
     setAutomations((prevAutomations) => {
       const updatedAutomations = [...prevAutomations];
-      updatedAutomations[stageIndex] = savedAutomations; // Save the automations for the specific stage
+      const existingAutomations = updatedAutomations[stageIndex] || [];
+      updatedAutomations[stageIndex] = [...existingAutomations, ...newAutomations]; // Append new automations
 
-      return updatedAutomations; // Return the updated automations
+      return updatedAutomations;
     });
 
-    console.log("Saved Automations for Stage", stageIndex, ":", savedAutomations);
+    console.log("Saved Automations for Stage", stageIndex, ":", newAutomations);
+    setAutoFormOpen(false);
+    setItems([]); // Clear items after saving
   };
+
   const renderAutomationsForStage = (index) => {
     const automationsForStage = automations[index] || []; // Get automations for the specific stage
     return (
@@ -823,7 +888,7 @@ const PipelineTemp = () => {
                         <Drawer anchor="right" open={isAutoFormOpen[index] && !!activeAction} onClose={() => toggleForm(index)} PaperProps={{ sx: { width: 550 } }}>
                           <Box>
                             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2 }}>
-                              <Typography variant="h4">Automations</Typography>
+                              <Typography variant="h4">Automations - Stage {activeStageIndex}</Typography>
                               <IconButton onClick={() => toggleForm(index)}>
                                 <RxCross2 />
                               </IconButton>

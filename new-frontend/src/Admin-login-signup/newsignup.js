@@ -815,7 +815,7 @@ const MyForm = () => {
       redirect: "follow",
     };
 
-    fetch("http://68.251.138.236:8880/admin/notification", requestOptions)
+    fetch(`${LOGIN_API}/admin/notification`, requestOptions)
       .then((response) => response.json())
       .then((result) => console.log(result))
       .catch((error) => console.error(error));

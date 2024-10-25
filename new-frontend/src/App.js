@@ -76,6 +76,7 @@ import UpdateTeamMember from "./Users/UpdateTeamMember";
 import ActiveMember from "./Users/ActiveMember";
 import Deactivatemember from "./Users/DeactivateMember";
 import Stages from "./Pages/stagesAutomation";
+import FirmSettings from "./Settings/FirmSetting";
 const App = () => {
   return (
     <BrowserRouter>
@@ -134,7 +135,7 @@ const App = () => {
           {/* <Route path='/firmtemp/services/ServicesUpdate/:id' element={ServicesUpdate}/> */}
           <Route path="/servicesUpdate/:id" element={<ServicesUpdate />} />
           <Route path="/settings/myaccount" element={<MyAccount />} />
-
+          <Route path="/settings/firmsettings" element={<FirmSettings />} />
           <Route path="/accountsdash" element={<AccountDash />}>
             <Route path="overview/:data" element={<Overview />} />
             <Route path="info/:data" element={<Info />} />
