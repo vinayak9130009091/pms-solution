@@ -1,3 +1,6 @@
+
+
+
 import React, { useState, useEffect } from 'react';
 import { Chip, Box, Button, InputLabel, MenuItem, Select, TextField, Typography, Autocomplete } from '@mui/material';
 import PhoneInput from 'react-phone-input-2';
@@ -5,9 +8,9 @@ import 'react-phone-input-2/lib/style.css';
 import axios from 'axios';
 import { AiOutlinePlusCircle, AiOutlineDelete } from 'react-icons/ai';
 import { toast } from 'react-toastify';
-
-const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallScreen }) => {
+const ContactForm = ({ onContactUpdated ,selectedContact, handleClose, isSmallScreen }) => {
     const TAGS_API = process.env.REACT_APP_TAGS_TEMP_URL;
+
     // State variables for form fields
     const [firstName, setFirstName] = useState('');
     const [middleName, setMiddleName] = useState('');
@@ -18,12 +21,10 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
     const [ssn, setSsn] = useState('');
     const [email, setEmail] = useState('');
     const [phoneNumbers, setPhoneNumbers] = useState([]);
-    // const [selectedCountry, setSelectedCountry] = useState('');
-    const [selectedCountry, setSelectedCountry] = useState({ name: '', code: '' });
-
+    const [selectedCountry, setSelectedCountry] = useState('');
     const [streetAddress, setStreetAddress] = useState('');
     const [city, setCity] = useState('');
-
+    
     const [state, setState] = useState('');
     const [postalCode, setPostalCode] = useState('');
     const [tagsNew, setTagsNew] = useState([]);
@@ -32,7 +33,6 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
     const [combinedTagsValues, setCombinedTagsValues] = useState([]);
     useEffect(() => {
         if (selectedContact) {
-            console.log(selectedContact)
             setFirstName(selectedContact.firstName || '');
             setMiddleName(selectedContact.middleName || '');
             setLastName(selectedContact.lastName || '');
@@ -41,11 +41,7 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
             setNote(selectedContact.note || '');
             setSsn(selectedContact.ssn || '');
             setEmail(selectedContact.email || '');
-            // setSelectedCountry(selectedContact.country || '');
-            setSelectedCountry({
-                name: selectedContact.country?.name || '', // Use name field or an empty string
-                code: selectedContact.country?.code || ''  // Use code field or an empty string
-            });
+            setSelectedCountry(selectedContact.country || '');
             setStreetAddress(selectedContact.streetAddress || '');
             setCity(selectedContact.city || '');
             setState(selectedContact.state || '');
@@ -56,32 +52,32 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
             setPhoneNumbers(flatPhoneNumbers.map(phone => ({ id: Date.now(), phone, isPrimary: false })));
 
 
-            const flatTags = selectedContact.tags?.[0] || [];
-            setTagsNew(flatTags.map(tag => ({
-                value: tag._id,
-                label: tag.tagName,
-                colour: tag.tagColour,
-                customTagStyle: {
-                    backgroundColor: tag.tagColour,
-                    color: "#fff",
-                    alignItems: "center",
-                    textAlign: "center",
-                    padding: "2px,8px",
-                    fontSize: '15px',
-                    cursor: 'pointer',
-                },
-            })));
+       const flatTags = selectedContact.tags?.[0] || [];
+        setTagsNew(flatTags.map(tag => ({
+            value: tag._id,
+            label: tag.tagName,
+            colour: tag.tagColour,
+            customTagStyle: {
+                backgroundColor: tag.tagColour,
+                color: "#fff",
+                alignItems: "center",
+                textAlign: "center",
+                padding: "2px,8px",
+                fontSize: '15px',
+                cursor: 'pointer',
+            },
+        })));
 
-            // Set combinedTagsValues to match the tags in the contact
-            setCombinedTagsValues(flatTags.map(tag => tag._id));
+        // Set combinedTagsValues to match the tags in the contact
+        setCombinedTagsValues(flatTags.map(tag => tag._id));     
 
-
+            
             console.log('Tags:', selectedContact.tags);
-
-
+           
+            
         }
     }, [selectedContact]);
-
+    
 
     const [countries, setCountries] = useState([]);
     useEffect(() => {
@@ -98,22 +94,11 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
                 console.error('Error fetching country data:', error)
             );
     }, []);
-    // const handleCountryChange = (event) => {
-    //     setSelectedCountry(event.target.value);
-    //     // setCountry(event.target.value);
-    // };
-
     const handleCountryChange = (event) => {
-        const selectedCode = event.target.value;
-        const selectedCountryObj = countries.find(country => country.code === selectedCode);
-      
-        // Set the selected country as an object with name and code
-        setSelectedCountry({
-          name: selectedCountryObj.name,
-          code: selectedCode
-        });
-      };
-      
+        setSelectedCountry(event.target.value);
+        // setCountry(event.target.value);
+    };
+
     const handlePhoneNumberChange = (id, phone) => {
         setPhoneNumbers((prevPhoneNumbers) =>
             prevPhoneNumbers.map((item) =>
@@ -135,12 +120,12 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
         );
     };
 
-
+    
     const handleTagChange = (event, newValue) => {
         // setTagsNew(newValue);
         // const selectedTagsValues = newValue.map((option) => option.value);
         // setCombinedValues(selectedTagsValues);
-        setTagsNew(newValue);
+         setTagsNew(newValue);
         // Map selected options to their values and send as an array
         const selectedTagsValues = newValue.map((option) => option.value);
         // console.log(selectedTagsValues);
@@ -216,7 +201,7 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
             postalCode,
             tags: combinedTagsValues,
         };
-        console.log(updatedContact)
+
         try {
             const response = await fetch(`http://127.0.0.1:7000/contacts/${contactId}`, {
                 method: 'PATCH',
@@ -241,7 +226,7 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
             console.error('Error updating contact:', error);
             toast.error('Failed to update contact');
         }
-
+        
     };
 
     return (
@@ -450,7 +435,7 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
                 <InputLabel sx={{ color: 'black' }}>Country</InputLabel>
                 <Select
                     size='small'
-                    value={selectedCountry.code}
+                    value={selectedCountry}
                     onChange={handleCountryChange}
                     sx={{
                         width: '100%',
@@ -477,54 +462,54 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
                 />
             </Box>
             <Box sx={{ display: 'flex', flexDirection: isSmallScreen ? 'column' : 'row', gap: isSmallScreen ? 2 : 5, padding: '1px 5px 0 5px' }}>
-                <Box>
-                    <InputLabel sx={{ color: 'black' }}>City</InputLabel>
-                    <TextField
-                        fullWidth
-                        name="city"
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        margin="normal"
-                        placeholder="City"
-                        size="small"
-                    />
-                </Box>
-                <Box>
-                    <InputLabel sx={{ color: 'black' }}>State</InputLabel>
-                    <TextField
-                        fullWidth
-                        name="state"
-                        value={state}
-                        onChange={(e) => setState(e.target.value)}
-                        margin="normal"
-                        placeholder="State"
-                        size="small"
-                    />
-                </Box>
-                <Box>
-                    <InputLabel sx={{ color: 'black' }}>Postal Code</InputLabel>
-                    <TextField
-                        fullWidth
-                        name="postalCode"
-                        value={postalCode}
-                        onChange={(e) => setPostalCode(e.target.value)}
-                        margin="normal"
-                        placeholder="Postal Code"
-                        size="small"
-                    />
-                </Box>
+            <Box>
+                <InputLabel sx={{ color: 'black' }}>City</InputLabel>
+                <TextField
+                    fullWidth
+                    name="city"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    margin="normal"
+                    placeholder="City"
+                    size="small"
+                />
             </Box>
-            <Box sx={{ mt: 2, mb: 2 }}>
+            <Box>
+                <InputLabel sx={{ color: 'black' }}>State</InputLabel>
+                <TextField
+                    fullWidth
+                    name="state"
+                    value={state}
+                    onChange={(e) => setState(e.target.value)}
+                    margin="normal"
+                    placeholder="State"
+                    size="small"
+                />
+            </Box>
+            <Box>
+                <InputLabel sx={{ color: 'black' }}>Postal Code</InputLabel>
+                <TextField
+                    fullWidth
+                    name="postalCode"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    margin="normal"
+                    placeholder="Postal Code"
+                    size="small"
+                />
+            </Box>
+            </Box>
+            <Box sx={{ mt: 2 ,mb:2}}>
                 <Button
                     variant="contained"
-
+                    
                     onClick={handleSave} // Attach the save handler
                 >
                     Save
                 </Button>
                 <Button
                     variant="outlined"
-
+                  
                     onClick={handleClose}
                     sx={{ ml: 2 }}
                 >

@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Chip, Box, Button, InputLabel, MenuItem, Select, TextField, Typography, Autocomplete } from '@mui/material';
+import { Chip, Box, Button, InputLabel, MenuItem, Select, TextField, Typography, Autocomplete, Grid, IconButton } from '@mui/material';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import axios from 'axios';
 import { AiOutlinePlusCircle, AiOutlineDelete } from 'react-icons/ai';
 import { toast } from 'react-toastify';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import CloseIcon from '@mui/icons-material/Close';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Drawer, Checkbox } from '@mui/material';
 
-const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallScreen }) => {
+const ContactUpdateForm = ({ onContactUpdated, selectedContact, handleClose, isSmallScreen }) => {
+
     const TAGS_API = process.env.REACT_APP_TAGS_TEMP_URL;
+    const ACCOUNT_API = process.env.REACT_APP_ACCOUNTS_URL;
+
     // State variables for form fields
     const [firstName, setFirstName] = useState('');
     const [middleName, setMiddleName] = useState('');
@@ -20,7 +26,6 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
     const [phoneNumbers, setPhoneNumbers] = useState([]);
     // const [selectedCountry, setSelectedCountry] = useState('');
     const [selectedCountry, setSelectedCountry] = useState({ name: '', code: '' });
-
     const [streetAddress, setStreetAddress] = useState('');
     const [city, setCity] = useState('');
 
@@ -30,9 +35,10 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
     const [tags, setTags] = useState([]);
     const [contactId, setContactId] = useState(null); // Added state for contact ID
     const [combinedTagsValues, setCombinedTagsValues] = useState([]);
+
+    console.log(selectedContact)
     useEffect(() => {
         if (selectedContact) {
-            console.log(selectedContact)
             setFirstName(selectedContact.firstName || '');
             setMiddleName(selectedContact.middleName || '');
             setLastName(selectedContact.lastName || '');
@@ -51,11 +57,8 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
             setState(selectedContact.state || '');
             setPostalCode(selectedContact.postalCode || '');
             setContactId(selectedContact._id || null); // Set contact ID
-
             const flatPhoneNumbers = selectedContact.phoneNumbers?.[0] || [];
             setPhoneNumbers(flatPhoneNumbers.map(phone => ({ id: Date.now(), phone, isPrimary: false })));
-
-
             const flatTags = selectedContact.tags?.[0] || [];
             setTagsNew(flatTags.map(tag => ({
                 value: tag._id,
@@ -71,14 +74,10 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
                     cursor: 'pointer',
                 },
             })));
-
+            getaccountbycontactid(selectedContact._id)
             // Set combinedTagsValues to match the tags in the contact
             setCombinedTagsValues(flatTags.map(tag => tag._id));
-
-
             console.log('Tags:', selectedContact.tags);
-
-
         }
     }, [selectedContact]);
 
@@ -98,10 +97,6 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
                 console.error('Error fetching country data:', error)
             );
     }, []);
-    // const handleCountryChange = (event) => {
-    //     setSelectedCountry(event.target.value);
-    //     // setCountry(event.target.value);
-    // };
 
     const handleCountryChange = (event) => {
         const selectedCode = event.target.value;
@@ -113,7 +108,7 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
           code: selectedCode
         });
       };
-      
+
     const handlePhoneNumberChange = (id, phone) => {
         setPhoneNumbers((prevPhoneNumbers) =>
             prevPhoneNumbers.map((item) =>
@@ -135,15 +130,9 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
         );
     };
 
-
     const handleTagChange = (event, newValue) => {
-        // setTagsNew(newValue);
-        // const selectedTagsValues = newValue.map((option) => option.value);
-        // setCombinedValues(selectedTagsValues);
         setTagsNew(newValue);
-        // Map selected options to their values and send as an array
         const selectedTagsValues = newValue.map((option) => option.value);
-        // console.log(selectedTagsValues);
         setCombinedTagsValues(selectedTagsValues);
     };
 
@@ -161,6 +150,28 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
             console.error("Error fetching data:", error);
         }
     };
+
+    const [accountDataAll, setAccountDataAll] = useState([]);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const config = {
+                    method: "get",
+                    maxBodyLength: Infinity,
+                    url: `${ACCOUNT_API}/accounts/account/accountdetailslist`,
+                    headers: {},
+                };
+
+                const response = await axios.request(config);
+                setAccountDataAll(response.data.accountlist);
+                console.log(response.data.accountlist)
+            } catch (error) {
+                console.log("Error:", error);
+            }
+        };
+        fetchData();
+    }, []);
+    console.log(accountDataAll)
 
     const calculateWidth = (tagName) => {
         const baseWidth = 10;
@@ -243,6 +254,109 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
         }
 
     };
+
+    const [accountdata, SetAccountData] = useState([])
+    const getaccountbycontactid = (contactId) => {
+        const requestOptions = {
+            method: "GET",
+            redirect: "follow"
+        };
+        fetch(`http://127.0.0.1:7000/accounts/accountdetails/accountbycontactid/${contactId}`, requestOptions)
+            .then((response) => response.json())
+            .then((result) => {
+                SetAccountData(result.accounts)
+            })
+            .catch((error) => console.error(error));
+    }
+
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    // const handleDrawerOpen = () => {
+    //     setDrawerOpen(true);
+    // };
+    const handleDrawerOpen = () => {
+        // Initialize checkedAccounts when the drawer opens
+        const initialCheckedAccounts = accountDataAll
+            .filter(account => Array.isArray(account.Contacts) && account.Contacts.some(contact => contact._id === contactId))
+            .map(account => account.id);
+        setCheckedAccounts(initialCheckedAccounts);
+        setDrawerOpen(true);
+    };
+
+    const handleDrawerClose = () => {
+        setDrawerOpen(false);
+    };
+
+    const [checkedAccounts, setCheckedAccounts] = useState([]);
+
+    // Function to handle checkbox change
+    // const handleCheckboxChange = (accountId) => {
+    //     setCheckedAccounts((prev) => {
+    //         if (prev.includes(accountId)) {
+    //             // If the accountId is already checked, remove it
+    //             return prev.filter((id) => id !== accountId);
+    //         } else {
+    //             // Otherwise, add it to the checked list
+    //             return [...prev, accountId];
+    //         }
+    //     });
+    // };
+    const handleCheckboxChange = (accountId) => {
+        setCheckedAccounts((prev) => {
+            if (prev.includes(accountId)) {
+                // If already checked, remove from checkedAccounts
+                return prev.filter((id) => id !== accountId);
+            } else {
+                // Otherwise, add to checkedAccounts
+                return [...prev, accountId];
+            }
+        });
+    };
+
+    // console.log(checkedAccounts);
+
+    const updatecontactidtoAccounts = () => {
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+
+        const raw = JSON.stringify({
+            accountIds: checkedAccounts,
+            contactId: contactId
+        });
+        console.log(raw)
+        const requestOptions = {
+            method: "PATCH",
+            headers: myHeaders,
+            body: raw,
+            redirect: "follow"
+        };
+
+        fetch(`http://127.0.0.1:7000/accounts/accountdetails/updatecontacts/byaccountIds`, requestOptions)
+            .then((response) => response.text())
+            .then((result) => console.log(result))
+            .catch((error) => console.error(error));
+    }
+
+    // const [accountdata, setAccountData] = useState(initialAccountData);
+
+    const handleRemoveAccount = (accountId) => {
+        removecontactidfromaccount(accountId)
+        const updatedAccountData = accountdata.filter(account => account._id !== accountId);
+        SetAccountData(updatedAccountData); // Update the state to remove the clicked account
+    };
+
+    const removecontactidfromaccount = (accountId) => {
+        const requestOptions = {
+            method: "DELETE",
+            redirect: "follow"
+        };
+        fetch(`http://127.0.0.1:7000/accounts/accountdetails/removecontactfromaccount/${accountId}/${contactId}`, requestOptions)
+            .then((response) => response.json())
+            .then((result) => {
+                console.log(result)
+            })
+            .catch((error) => console.error(error));
+    }
+
 
     return (
         <form style={{ paddingRight: '3%', paddingLeft: '3%', height: '90vh', overflowY: 'auto' }} className='contact-form'>
@@ -450,7 +564,7 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
                 <InputLabel sx={{ color: 'black' }}>Country</InputLabel>
                 <Select
                     size='small'
-                    value={selectedCountry.code}
+                      value={selectedCountry.code}
                     onChange={handleCountryChange}
                     sx={{
                         width: '100%',
@@ -514,17 +628,134 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
                     />
                 </Box>
             </Box>
+
+            <Box p={2}>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Typography variant="h7" fontWeight="bold">
+                        Linked accounts
+                    </Typography>
+                    <Button
+                        startIcon={<AddCircleIcon />}
+                        color="primary"
+                        onClick={handleDrawerOpen} // Opens the drawer
+                    >
+                        Link accounts
+                    </Button>
+                    {/* Drawer Component */}
+                    <Drawer anchor="right" open={drawerOpen} onClose={handleDrawerClose}>
+                        <Box width={700} p={2}>
+                            {/* Drawer Header */}
+                            <Box display="flex" justifyContent="space-between" alignItems="center">
+                                <Typography variant="h6">Link accounts</Typography>
+                                <IconButton onClick={handleDrawerClose}>
+                                    <CloseIcon />
+                                </IconButton>
+                            </Box>
+
+                            {/* Search Input */}
+                            <Box mt={2} >
+                                <TextField
+                                    fullWidth
+                                    variant="outlined"
+                                    placeholder="Search"
+                                    InputProps={{
+                                        startAdornment: (
+                                            <Button sx={{ padding: 0 }}>
+                                                <svg className="icon v2-icon v2-icon-search" />
+                                            </Button>
+                                        )
+                                    }}
+                                />
+                            </Box>
+                            {/* Accounts List */}
+                            <Box mt={2}>
+                                <TableContainer>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell padding="checkbox">
+                                                    <Checkbox />
+                                                </TableCell>
+                                                <TableCell>ID</TableCell>
+                                                <TableCell>Name</TableCell>
+                                                {/* <TableCell>Type</TableCell>
+                                                <TableCell>Tags</TableCell> */}
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {accountDataAll.map((account) => (
+                                                <TableRow key={account.id}>
+                                                    <TableCell padding="checkbox">
+
+                                                        <Checkbox
+                                                            checked={checkedAccounts.includes(account.id)}
+                                                            onChange={() => handleCheckboxChange(account.id)}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>{account.id}</TableCell>
+                                                    <TableCell>{account.Name}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </Box>
+                            {/* Drawer Footer */}
+                            <Box mt={4}>
+                                <Button variant="contained" color="primary" onClick={updatecontactidtoAccounts}>
+                                    Save
+                                </Button>
+                                <Button variant="outlined" onClick={handleDrawerClose}>
+                                    Cancel
+                                </Button>
+                            </Box>
+                        </Box>
+                    </Drawer>
+                </Box>
+                <Box mt={3}>
+                    <TableContainer component={Paper}>
+                        <Table>
+                            {/* Table header */}
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell><Typography variant="h6" fontWeight="bold">Name</Typography></TableCell>
+                                    <TableCell><Typography variant="h6" fontWeight="bold">Description</Typography></TableCell>
+                                </TableRow>
+                            </TableHead>
+                            {/* Table body */}
+                            <TableBody>
+                                {accountdata.map((account) => (
+                                    <TableRow key={account._id}>
+                                        {/* Account Name */}
+                                        <TableCell>
+                                            <Button href={`/app/clients/${account._id}`} target="_blank" rel="noopener" color="primary">
+                                                {account.accountName}
+                                            </Button>
+                                        </TableCell>
+                                        <TableCell>{account.description}</TableCell>
+                                        {/* Close button */}
+                                        <TableCell>
+                                            <IconButton color="secondary" onClick={() => handleRemoveAccount(account._id)}>
+                                                <CloseIcon />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Box>
+            </Box>
+
             <Box sx={{ mt: 2, mb: 2 }}>
                 <Button
                     variant="contained"
-
                     onClick={handleSave} // Attach the save handler
                 >
                     Save
                 </Button>
                 <Button
                     variant="outlined"
-
                     onClick={handleClose}
                     sx={{ ml: 2 }}
                 >
@@ -535,4 +766,4 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
     );
 };
 
-export default ContactForm;
+export default ContactUpdateForm;
