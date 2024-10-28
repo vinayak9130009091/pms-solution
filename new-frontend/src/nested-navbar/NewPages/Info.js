@@ -12,7 +12,7 @@ import { useTheme } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Accountupdate from "./accountupdate";
 import ChevronDownIcon from "@mui/icons-material/ExpandMore";
-
+import { toast } from "react-toastify";
 const Info = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery("(max-width: 1000px)");
@@ -47,8 +47,11 @@ const Info = () => {
         setUserType(result.accountlist.Type);
         setTags(result.accountlist.Tags.flat());
         setTeams(result.accountlist.Team);
+
+        // setDescription()
         if (result && result.accountlist) {
           setContacts(result.accountlist.Contacts);
+          setDescription(result.accountlist.Contacts.description);
         }
         fetchaccountdatabyid(result.accountlist.id);
       })
@@ -88,7 +91,7 @@ const Info = () => {
         throw new Error("Failed to fetch data");
       }
       const data = await response.json();
-      console.log(data)
+      console.log(data);
       setSelectedContact(data.contact);
       setIsDrawerOpen(true);
     } catch (error) {
@@ -106,11 +109,17 @@ const Info = () => {
     try {
       const response = await axios.get(`${CONTACT_API}/contacts/contactlist/list/`);
       setContactData(response.data.contactlist);
+      console.log(response.data.contactlist);
     } catch (error) {
       console.error("API Error:", error);
     }
   };
   console.log(contactData);
+
+  const contactOptions = contactData.map((contact) => ({
+    value: contact._id,
+    label: contact.name,
+  }));
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [contactName, setContactName] = useState(null);
@@ -160,7 +169,7 @@ const Info = () => {
     };
 
     fetch(`http://127.0.0.1:7000/accounts/accountdetails/${data}`, requestOptions)
-      .then((response) => response.text())
+      .then((response) => response.json())
       .then((result) => console.log(result))
       .catch((error) => console.error(error));
   };
@@ -181,8 +190,11 @@ const Info = () => {
     };
 
     fetch(`http://127.0.0.1:7000/contacts/${selectedContact}`, requestOptions)
-      .then((response) => response.text())
-      .then((result) => console.log(result))
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        toast.success("Contact Updated successfully!");
+      })
       .catch((error) => console.error(error));
   };
 
@@ -225,7 +237,7 @@ const Info = () => {
 
   useEffect(() => {
     setFilteredContacts(contactData.filter((contact) => contact.name.toLowerCase().includes(searchQuery.toLowerCase())));
-  }, [searchQuery, contactData]); // Adjusted dependency array
+  }, [searchQuery, contactData]); 
 
   const handleAddContactDrawer = () => {
     setIsDrawerOpenForAddContact(true);
@@ -258,7 +270,7 @@ const Info = () => {
       redirect: "follow",
     };
     fetch(`http://127.0.0.1:7000/accounts/accountdetails/${accountDatabyid._id}`, requestOptions)
-      .then((response) => response.text())
+      .then((response) => response.json())
       .then((result) => {
         console.log(result);
       })
@@ -451,6 +463,32 @@ const Info = () => {
                     disableClearable // Prevents clearing the input by clicking the clear button
                     value={filteredContacts.filter((contact) => selectedContacts.includes(contact.id))} // Control the selected value
                   />
+                  {/* <Autocomplete
+                    multiple
+                    sx={{ background: "#fff", mt: 1 }}
+                    options={contactOptions}
+                    size="small"
+                    getOptionLabel={(option) => option.label}
+                    value={selectedContacts}
+                    // onChange={handleUserChange}
+                    onChange={(event, newValue) => {
+                      // Update selected contacts with only IDs
+                      const ids = contactOptions.map((contact) => contact.id); // Extract IDs from selected contacts
+                      setSelectedContacts(ids); // Update selectedContacts with IDs
+                      console.log(getSelectedIds()); // Log the comma-separated IDs
+                    }}
+                    renderOption={(props, option) => (
+                      <Box
+                        component="li"
+                        {...props}
+                        sx={{ cursor: "pointer", margin: "5px 10px" }} // Add cursor pointer style
+                      >
+                        {option.label}
+                      </Box>
+                    )}
+                    renderInput={(params) => <TextField {...params} variant="outlined" placeholder="Assignees" />}
+                    isOptionEqualToValue={(option, value) => option.value === value.value}
+                  /> */}
                 </Box>
 
                 {/* Footer */}
