@@ -171,71 +171,71 @@
 //   }, []);
 
 //   //Tag FetchData ================
-  // const [tags, setTags] = useState([]);
-  // useEffect(() => {
-  //   fetchTagData();
-  // }, []);
+// const [tags, setTags] = useState([]);
+// useEffect(() => {
+//   fetchTagData();
+// }, []);
 
-  // const fetchTagData = async () => {
-  //   try {
-  //     const url = `${TAGS_API}/tags/`;
+// const fetchTagData = async () => {
+//   try {
+//     const url = `${TAGS_API}/tags/`;
 
-  //     const response = await fetch(url);
-  //     const data = await response.json();
-  //     setTags(data.tags);
-  //     console.log(data.tags);
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error);
-  //   }
-  // };
-  // //  for tags
-  // const calculateWidth = (tagName) => {
-  //   const baseWidth = 10; // base width for each tag
-  //   const charWidth = 8; // approximate width of each character
-  //   const padding = 10; // padding on either side
-  //   return baseWidth + charWidth * tagName.length + padding;
-  // };
+//     const response = await fetch(url);
+//     const data = await response.json();
+//     setTags(data.tags);
+//     console.log(data.tags);
+//   } catch (error) {
+//     console.error("Error fetching data:", error);
+//   }
+// };
+// //  for tags
+// const calculateWidth = (tagName) => {
+//   const baseWidth = 10; // base width for each tag
+//   const charWidth = 8; // approximate width of each character
+//   const padding = 10; // padding on either side
+//   return baseWidth + charWidth * tagName.length + padding;
+// };
 
-  // const tagsOptions = tags.map((tag) => ({
-  //   value: tag._id,
-  //   label: tag.tagName,
-  //   colour: tag.tagColour,
+// const tagsOptions = tags.map((tag) => ({
+//   value: tag._id,
+//   label: tag.tagName,
+//   colour: tag.tagColour,
 
-  //   customStyle: {
-  //     backgroundColor: tag.tagColour,
-  //     color: "#fff",
-  //     borderRadius: "8px",
-  //     alignItems: "center",
-  //     textAlign: "center",
-  //     marginBottom: "5px",
-  //     padding: "2px,8px",
-  //     fontSize: "10px",
-  //     width: `${calculateWidth(tag.tagName)}px`,
-  //     margin: "7px",
-  //   },
-  //   customTagStyle: {
-  //     backgroundColor: tag.tagColour,
-  //     color: "#fff",
-  //     alignItems: "center",
-  //     textAlign: "center",
-  //     padding: "2px,8px",
-  //     fontSize: "10px",
-  //     borderRadius: "8px",
-  //     width: `${calculateWidth(tag.tagName)}px`,
-  //     cursor: "pointer",
-  //     margin: "7px",
-  //   },
-  //   customInputTagStyle: {
-  //     backgroundColor: tag.tagColour,
-  //     color: "#fff",
-  //     alignItems: "center",
-  //     textAlign: "center",
-  //     padding: "2px,8px",
-  //     fontSize: "10px",
-  //     cursor: "pointer",
-  //     margin: "7px",
-  //   },
-  // }));
+//   customStyle: {
+//     backgroundColor: tag.tagColour,
+//     color: "#fff",
+//     borderRadius: "8px",
+//     alignItems: "center",
+//     textAlign: "center",
+//     marginBottom: "5px",
+//     padding: "2px,8px",
+//     fontSize: "10px",
+//     width: `${calculateWidth(tag.tagName)}px`,
+//     margin: "7px",
+//   },
+//   customTagStyle: {
+//     backgroundColor: tag.tagColour,
+//     color: "#fff",
+//     alignItems: "center",
+//     textAlign: "center",
+//     padding: "2px,8px",
+//     fontSize: "10px",
+//     borderRadius: "8px",
+//     width: `${calculateWidth(tag.tagName)}px`,
+//     cursor: "pointer",
+//     margin: "7px",
+//   },
+//   customInputTagStyle: {
+//     backgroundColor: tag.tagColour,
+//     color: "#fff",
+//     alignItems: "center",
+//     textAlign: "center",
+//     padding: "2px,8px",
+//     fontSize: "10px",
+//     cursor: "pointer",
+//     margin: "7px",
+//   },
+// }));
 
 //   const TagFilter = ({ column }) => {
 //     const columnFilterValue = column.getFilterValue() || [];
@@ -345,8 +345,8 @@
 //       {
 //         accessorKey: "Tags",
 //         header: "Tags",
-        // filterFn: tagFilterFn, // Use the custom tag filter function
-        // Filter: ({ column, table }) => <TagFilter column={column} table={table} />,
+// filterFn: tagFilterFn, // Use the custom tag filter function
+// Filter: ({ column, table }) => <TagFilter column={column} table={table} />,
 
 //         // Cell: ({ cell }) => {
 //         //   const tags = cell.getValue()[0];
@@ -634,17 +634,21 @@
 // export default Example;
 
 import React, { useEffect, useState } from "react";
-import { Chip, Tooltip, Autocomplete, OutlinedInput, MenuItem as MuiMenuItem, FormControl, InputLabel, Menu, Button, IconButton, Select, MenuItem, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Checkbox, Paper } from "@mui/material";
+import { TablePagination, Chip, Tooltip, Autocomplete, OutlinedInput, MenuItem as MuiMenuItem, FormControl, InputLabel, Menu, Button, IconButton, Select, MenuItem, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Checkbox, Paper } from "@mui/material";
 import axios from "axios";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { RxCross2 } from "react-icons/rx";
 import { Link } from "react-router-dom";
 const FixedColumnTable = () => {
   const ACCOUNT_API = process.env.REACT_APP_ACCOUNTS_URL;
+  const TAGS_API = process.env.REACT_APP_TAGS_TEMP_URL;
   const [accountData, setAccountData] = useState([]);
   const [selected, setSelected] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: "Name", direction: "asc" });
+
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5); // 5 rows per page
   const [filters, setFilters] = useState({
     accountName: "",
     type: "",
@@ -682,13 +686,16 @@ const FixedColumnTable = () => {
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prevFilters) => ({ ...prevFilters, [name]: value })); // Update filter without clearing others
+    setPage(0);
   };
+
   const filteredData = accountData.filter((row) => {
     const accountNameMatch = row.Name.toLowerCase().includes(filters.accountName.toLowerCase());
     const typeMatch = filters.type ? row.Type.toLowerCase() === filters.type.toLowerCase() : true;
     const teamMemberMatch = filters.teamMember ? row.Team.some((member) => member.username === filters.teamMember) : true;
     // const tagMatch = filters.tags.length ? filters.tags.every((tag) => row.Tags.some((rowTag) => rowTag.tagName === tag)) : true;
-    const tagMatch = filters.tags.length ? filters.tags.every((tag) => row.Tags.some((rowTag) => rowTag.tagName === tag.tagName && rowTag.tagColour === tag.tagColour)) : true;
+    // const tagMatch = filters.tags.length ? filters.tags.some((tag) => row.Tags.some((rowTag) => rowTag.tagName === tag.tagName && rowTag.tagColour === tag.tagColour)) : true;
+    const tagMatch = filters.tags.length ? row.Tags && Array.isArray(row.Tags) && filters.tags.some((tag) => row.Tags.some((rowTag) => rowTag.tagName === tag.tagName && rowTag.tagColour === tag.tagColour)) : true;
     return accountNameMatch && typeMatch && teamMemberMatch && tagMatch;
   });
   const handleFilterButtonClick = (event) => {
@@ -717,12 +724,29 @@ const FixedColumnTable = () => {
     setFilters((prevFilters) => ({ ...prevFilters, [name]: values }));
   };
   const teamMemberOptions = Array.from(new Set(accountData.flatMap((row) => row.Team.map((member) => member.username))));
+  const [tags, setTags] = useState([]);
 
-  const uniqueTags = Array.from(new Set(accountData.flatMap((row) => row.Tags.map((tag) => ({ tagName: tag.tagName, tagColour: tag.tagColour })))), (tag) => `${tag.tagName}-${tag.tagColour}`).map((tagKey) => {
-    const [tagName, tagColour] = tagKey.split("-");
-    return { tagName, tagColour };
-  });
+  useEffect(() => {
+    fetchTagData();
+  }, []);
 
+  const fetchTagData = async () => {
+    try {
+      const response = await fetch(`${TAGS_API}/tags/`);
+      const data = await response.json();
+      setTags(data.tags);
+    } catch (error) {
+      console.error("Error fetching tags:", error);
+    }
+  };
+
+  const uniqueTags =
+    tags.length > 0
+      ? Array.from(new Set(tags.map((tag) => `${tag.tagName}-${tag.tagColour}`))).map((tagKey) => {
+          const [tagName, tagColour] = tagKey.split("-");
+          return { tagName, tagColour };
+        })
+      : [];
   const calculateWidth = (tagName) => {
     const baseWidth = 10; // base width for each tag
     const charWidth = 8; // approximate width of each character
@@ -738,18 +762,6 @@ const FixedColumnTable = () => {
     });
   };
 
-  // const sortedData = React.useMemo(() => {
-  //   const sorted = [...filteredData];
-  //   if (sortConfig.key) {
-  //     sorted.sort((a, b) => {
-  //       if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === "asc" ? -1 : 1;
-  //       if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === "asc" ? 1 : -1;
-  //       return 0;
-  //     });
-  //   }
-  //   return sorted;
-  // }, [filteredData, sortConfig]);
-
   const sortedData = React.useMemo(() => {
     const dataToSort = filteredData; // Use filteredData for sorting
     const sorted = [...dataToSort]; // Create a copy of filteredData
@@ -763,6 +775,14 @@ const FixedColumnTable = () => {
     }
     return sorted;
   }, [filteredData, sortConfig]);
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+  const paginatedData = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   return (
     <>
       <div style={{ display: "flex", padding: "10px", marginBottom: "20px" }}>
@@ -849,7 +869,7 @@ const FixedColumnTable = () => {
             <Autocomplete
               multiple
               options={uniqueTags}
-              value={filters.tags}
+              value={filters.tags || []}
               onChange={(e, newValue) => handleMultiSelectChange("tags", newValue)}
               getOptionLabel={(option) => option.tagName}
               filterSelectedOptions
@@ -875,17 +895,17 @@ const FixedColumnTable = () => {
               renderTags={(selected, getTagProps) =>
                 selected.map((option, index) => (
                   <Chip
-                    key={option.tagName}
+                    key={option.value}
                     label={option.tagName}
-                    {...getTagProps({ index })}
                     style={{
                       backgroundColor: option.tagColour,
                       color: "#fff",
-                      borderRadius: "8px",
+                      cursor: "pointer",
+                      // borderRadius: "8px",
                       fontSize: "12px",
                       margin: "2px",
                     }}
-                    deleteIcon={<RxCross2 style={{ color: "#fff", cursor: "pointer" }} />}
+                    {...getTagProps({ index })}
                   />
                 ))
               }
@@ -918,7 +938,9 @@ const FixedColumnTable = () => {
               </TableCell>
               <TableCell width="200">Type</TableCell>
               <TableCell width="200">Follow</TableCell>
-              <TableCell width="200">Team Members</TableCell>
+              <TableCell width="200" height="60">
+                Team Members
+              </TableCell>
               <TableCell width="200">Tags</TableCell>
               <TableCell width="200">Invoices</TableCell>
               <TableCell width="200">Credits</TableCell>
@@ -931,7 +953,7 @@ const FixedColumnTable = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedData.map((row) => {
+            {paginatedData.map((row) => {
               const isSelected = selected.indexOf(row.id) !== -1;
               return (
                 <TableRow key={row.id} hover onClick={() => handleSelect(row.id)} role="checkbox" tabIndex={-1} selected={isSelected}>
@@ -943,7 +965,7 @@ const FixedColumnTable = () => {
                   </TableCell>
                   <TableCell>{row.Type}</TableCell>
                   <TableCell>{row.Follow}</TableCell>
-                  <TableCell style={{ display: "flex", alignItems: "center" }}>
+                  <TableCell style={{ display: "flex", alignItems: "center" }} height="40">
                     {row.Team.map((member) => {
                       // Generate initials from the username
                       const initials = member.username
@@ -960,8 +982,8 @@ const FixedColumnTable = () => {
                               backgroundColor: "#3f51b5", // Customize badge color as needed
                               color: "#fff",
                               borderRadius: "50%",
-                              width: "24px",
-                              height: "24px",
+                              width: "20px",
+                              height: "20px",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
@@ -977,7 +999,25 @@ const FixedColumnTable = () => {
                       );
                     })}
                   </TableCell>
-                  <TableCell>
+                  {/* <TableCell>
+                    {row.Tags &&
+                      row.Tags.map((tag) => (
+                        <span
+                          key={tag.tagName}
+                          style={{
+                            backgroundColor: tag.tagColour,
+                            color: "#fff",
+                            padding: "2px 8px",
+                            borderRadius: "8px",
+                            marginRight: "5px",
+                            fontSize: "12px",
+                          }}
+                        >
+                          {tag.tagName}
+                        </span>
+                      ))}
+                  </TableCell> */}
+                  {/* <TableCell>
                     {row.Tags.length > 1 ? (
                       <Tooltip
                         title={
@@ -1032,7 +1072,66 @@ const FixedColumnTable = () => {
                       ))
                     )}
                     {row.Tags.length > 1 && <span style={{ marginLeft: "5px", fontSize: "10px", color: "#555" }}>+{row.Tags.length - 1}</span>}
+                  </TableCell> */}
+                  <TableCell>
+                    {Array.isArray(row.Tags) && row.Tags.length > 0 ? (
+                      row.Tags.length > 1 ? (
+                        <Tooltip
+                          title={
+                            <div>
+                              {row.Tags.map((tag) => (
+                                <div
+                                  key={tag._id}
+                                  style={{
+                                    background: tag.tagColour,
+                                    color: "#fff",
+                                    borderRadius: "8px",
+                                    padding: "2px 8px",
+                                    marginBottom: "2px",
+                                    fontSize: "10px",
+                                  }}
+                                >
+                                  {tag.tagName}
+                                </div>
+                              ))}
+                            </div>
+                          }
+                          placement="top"
+                        >
+                          <span
+                            style={{
+                              background: row.Tags[0].tagColour, // Show color of the first tag
+                              color: "#fff",
+                              borderRadius: "8px",
+                              padding: "2px 8px",
+                              fontSize: "10px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            {row.Tags[0].tagName}
+                          </span>
+                        </Tooltip>
+                      ) : (
+                        row.Tags.map((tag) => (
+                          <span
+                            key={tag._id}
+                            style={{
+                              background: tag.tagColour,
+                              color: "#fff",
+                              borderRadius: "8px",
+                              padding: "2px 8px",
+                              fontSize: "10px",
+                              marginLeft: "3px",
+                            }}
+                          >
+                            {tag.tagName}
+                          </span>
+                        ))
+                      )
+                    ) : null}
+                    {Array.isArray(row.Tags) && row.Tags.length > 1 && <span style={{ marginLeft: "5px", fontSize: "10px", color: "#555" }}>+{row.Tags.length - 1}</span>}
                   </TableCell>
+
                   <TableCell>{row.Invoices}</TableCell>
                   <TableCell>{row.Credits}</TableCell>
                   <TableCell>{row.Tasks}</TableCell>
@@ -1047,8 +1146,68 @@ const FixedColumnTable = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <TablePagination rowsPerPageOptions={[5, 10, 15]} component="div" count={sortedData.length} rowsPerPage={rowsPerPage} page={page} onPageChange={handleChangePage} onRowsPerPageChange={handleChangeRowsPerPage} />
     </>
   );
 };
 
 export default FixedColumnTable;
+
+{
+  /* <TableCell>
+{row.tags.length > 1 ? (
+  <Tooltip
+    title={
+      <div>
+        {row.tags.map((tag) => (
+          <div
+            key={tag._id}
+            style={{
+              background: tag.tagColour,
+              color: "#fff",
+              borderRadius: "8px",
+              padding: "2px 8px",
+              marginBottom: "2px",
+              fontSize: "10px",
+            }}
+          >
+            {tag.tagName}
+          </div>
+        ))}
+      </div>
+    }
+    placement="top"
+  >
+    <span
+      style={{
+        background: row.tags[0].tagColour, // Show color of the first tag
+        color: "#fff",
+        borderRadius: "8px",
+        padding: "2px 8px",
+        fontSize: "10px",
+        cursor: "pointer",
+      }}
+    >
+      {row.tags[0].tagName}
+    </span>
+  </Tooltip>
+) : (
+  row.tags.map((tag) => (
+    <span
+      key={tag._id}
+      style={{
+        background: tag.tagColour,
+        color: "#fff",
+        borderRadius: "8px",
+        padding: "2px 8px",
+        fontSize: "10px",
+        marginLeft: "3px",
+      }}
+    >
+      {tag.tagName}
+    </span>
+  ))
+)}
+{row.tags.length > 1 && <span style={{ marginLeft: "5px", fontSize: "10px", color: "#555" }}>+{row.tags.length - 1}</span>}
+</TableCell> */
+}

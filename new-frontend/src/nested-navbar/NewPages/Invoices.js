@@ -1,18 +1,13 @@
 import React from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { Box, } from '@mui/material'
-const dashInvoices = () => {
-  const accountid = '661b6d50187951c779906e29'
+import { useNavigate, useParams, useRouteLoaderData } from "react-router-dom";
+
+const DashInvoices = () => {
+  const { data } =  useParams();
+  console.log(data)
   return (
-  //   <div className="invoices">
-  //   <div className="invoices-nav" style={{ display: 'flex', gap: '50px', }}>
-      // <NavLink to={`/accountsdash/invoices/${accountid}/invoice`} >Invoice</NavLink >
-      // <NavLink to={`/accountsdash/invoices/${accountid}/payments`} >Payments</NavLink>
-    
-  //   </div>
-  //   <div> <hr/></div>
-  //   <div style={{paddingTop:'20px'}}><Outlet /></div>
-  // </div>
+
   <Box >
 
       <Box className="firmtemp" >
@@ -37,8 +32,8 @@ const dashInvoices = () => {
             }
           }
         }}>
-             <NavLink to={`/accountsdash/invoices/${accountid}/invoice`} >Invoice</NavLink >
-             <NavLink to={`/accountsdash/invoices/${accountid}/payments`} >Payments</NavLink>
+             <NavLink to={`/accountsdash/invoices/${data}/invoice`} >Invoice</NavLink >
+             <NavLink to={`/accountsdash/invoices/${data}/payments`} >Payments</NavLink>
         </Box>
 
       </Box>
@@ -48,4 +43,4 @@ const dashInvoices = () => {
   )
 }
 
-export default dashInvoices
+export default DashInvoices

@@ -71,7 +71,7 @@ const Info = () => {
       redirect: "follow",
     };
 
-    fetch(`http://127.0.0.1:7000/accounts/accountdetails/getAccountbyIdAll/${accountid}`, requestOptions)
+    fetch(`${ACCOUNT_API}/accounts/accountdetails/getAccountbyIdAll/${accountid}`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
         console.log(result);
@@ -168,7 +168,7 @@ const Info = () => {
       redirect: "follow",
     };
 
-    fetch(`http://127.0.0.1:7000/accounts/accountdetails/${data}`, requestOptions)
+    fetch(`${ACCOUNT_API}/accounts/accountdetails/${data}`, requestOptions)
       .then((response) => response.json())
       .then((result) => console.log(result))
       .catch((error) => console.error(error));
@@ -189,7 +189,7 @@ const Info = () => {
       redirect: "follow",
     };
 
-    fetch(`http://127.0.0.1:7000/contacts/${selectedContact}`, requestOptions)
+    fetch(`${CONTACT_API}/contacts/${selectedContact}`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
         console.log(result);
@@ -208,7 +208,7 @@ const Info = () => {
       method: "DELETE",
       redirect: "follow",
     };
-    fetch(`http://127.0.0.1:7000/accounts/accountdetails/removecontactfromaccount/${data}/${contactId}`, requestOptions)
+    fetch(`${ACCOUNT_API}/accounts/accountdetails/removecontactfromaccount/${data}/${contactId}`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
         handleContactUpdated();
@@ -237,7 +237,7 @@ const Info = () => {
 
   useEffect(() => {
     setFilteredContacts(contactData.filter((contact) => contact.name.toLowerCase().includes(searchQuery.toLowerCase())));
-  }, [searchQuery, contactData]); 
+  }, [searchQuery, contactData]);
 
   const handleAddContactDrawer = () => {
     setIsDrawerOpenForAddContact(true);
@@ -269,10 +269,13 @@ const Info = () => {
       body: raw,
       redirect: "follow",
     };
-    fetch(`http://127.0.0.1:7000/accounts/accountdetails/${accountDatabyid._id}`, requestOptions)
+    fetch(`${ACCOUNT_API}/accounts/accountdetails/${accountDatabyid._id}`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
         console.log(result);
+        handleCloseDrawerofAddContact();
+        toast.success("contact added successfully");
+        fetchContacts();
       })
       .catch((error) => console.error(error));
   };

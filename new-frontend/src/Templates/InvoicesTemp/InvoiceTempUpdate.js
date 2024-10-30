@@ -11,6 +11,8 @@ import { useTheme } from "@mui/material/styles";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import { useNavigate, useParams } from "react-router-dom";
 import CreatableSelect from "react-select/creatable";
+import Editor from "../Texteditor/Editor";
+
 const InvoiceTempUpdate = () => {
   const INVOICE_API = process.env.REACT_APP_INVOICE_TEMP_URL;
   const SERVICE_API = process.env.REACT_APP_SERVICES_URL;
@@ -23,6 +25,11 @@ const InvoiceTempUpdate = () => {
   //   // window.location.reload();
   //   navigate('/firmtemp/templates/invoices')
   // };
+
+  const [clientNote, setClientNote] = useState("");
+  const handleEditorChange = (content) => {
+    setClientNote(content);
+  };
 
   const paymentsOptions = [
     { value: "Bank Debits", label: "Bank Debits" },
@@ -187,6 +194,8 @@ const InvoiceTempUpdate = () => {
         setEmailToClient(invoiceResult.invoiceTemplate.sendEmailWhenInvCreated);
         setPayUsingCredits(invoiceResult.invoiceTemplate.payInvoicewithcredits);
         setInvoiceReminders(invoiceResult.invoiceTemplate.sendReminderstoClients);
+        setClientNote(invoiceResult.invoiceTemplate.clientNote);
+
         // Map lineItems to the format needed for rows
         // const formattedRows = invoiceResult.invoiceTemplate.lineItems.map((item) => ({
 
@@ -242,6 +251,8 @@ const InvoiceTempUpdate = () => {
         taxTotal: taxTotal,
         total: totalAmount,
       },
+      clientNote: clientNote,
+
       active: "true",
     });
 
@@ -300,6 +311,8 @@ const InvoiceTempUpdate = () => {
         taxTotal: taxTotal,
         total: totalAmount,
       },
+      clientNote: clientNote,
+
       active: "true",
     });
 
@@ -1232,6 +1245,14 @@ const InvoiceTempUpdate = () => {
                         </Table>
                       </div>
                     </div>
+
+                    <Box sx={{ mb: 10, mt: 2 }}>
+                      <Typography variant="h6" mb={1}>
+                        Note to client
+                      </Typography>
+                      <Editor onChange={handleEditorChange} initialContent={clientNote} />
+                    </Box>
+
                     {/* <Box style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '20px' }}>
                         <Box onClick={() => addRow()} style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', color: 'blue', fontSize: '18px' }}>
                           <AiOutlinePlusCircle /> Line item

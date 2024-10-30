@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 const ContactUpdateForm = ({ onContactUpdated, selectedContact, handleClose, isSmallScreen }) => {
   const TAGS_API = process.env.REACT_APP_TAGS_TEMP_URL;
   const ACCOUNT_API = process.env.REACT_APP_ACCOUNTS_URL;
-
+  const CONTACT_API = process.env.REACT_APP_CONTACTS_URL;
   // State variables for form fields
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
@@ -235,7 +235,7 @@ const ContactUpdateForm = ({ onContactUpdated, selectedContact, handleClose, isS
     };
     console.log(updatedContact);
     try {
-      const response = await fetch(`http://127.0.0.1:7000/contacts/${contactId}`, {
+      const response = await fetch(`${CONTACT_API}/contacts/${contactId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -266,7 +266,7 @@ const ContactUpdateForm = ({ onContactUpdated, selectedContact, handleClose, isS
       method: "GET",
       redirect: "follow",
     };
-    fetch(`http://127.0.0.1:7000/accounts/accountdetails/accountbycontactid/${contactId}`, requestOptions)
+    fetch(`${ACCOUNT_API}/accounts/accountdetails/accountbycontactid/${contactId}`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
         SetAccountData(result.accounts);
@@ -333,7 +333,7 @@ const ContactUpdateForm = ({ onContactUpdated, selectedContact, handleClose, isS
       redirect: "follow",
     };
 
-    fetch(`http://127.0.0.1:7000/accounts/accountdetails/updatecontacts/byaccountIds`, requestOptions)
+    fetch(`${ACCOUNT_API}/accounts/accountdetails/updatecontacts/byaccountIds`, requestOptions)
       .then((response) => response.text())
       .then((result) => console.log(result))
       .catch((error) => console.error(error));
@@ -352,7 +352,7 @@ const ContactUpdateForm = ({ onContactUpdated, selectedContact, handleClose, isS
       method: "DELETE",
       redirect: "follow",
     };
-    fetch(`http://127.0.0.1:7000/accounts/accountdetails/removecontactfromaccount/${accountId}/${contactId}`, requestOptions)
+    fetch(`${ACCOUNT_API}/accounts/accountdetails/removecontactfromaccount/${accountId}/${contactId}`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
         console.log(result);

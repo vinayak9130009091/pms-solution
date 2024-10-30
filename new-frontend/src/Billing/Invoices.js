@@ -18,11 +18,14 @@ import { useTheme } from "@mui/material/styles";
 import { RxCross2 } from "react-icons/rx";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import CreatableSelect from "react-select/creatable";
+import { useNavigate } from "react-router-dom";
 const Invoices = ({ charLimit = 4000 }) => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const ACCOUNT_API = process.env.REACT_APP_ACCOUNTS_URL;
   const SERVICE_API = process.env.REACT_APP_SERVICES_URL;
+  const INVOICE_NEW = process.env.REACT_APP_INVOICES_URL;
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [payInvoice, setIsPayInvoice] = useState(false);
@@ -406,6 +409,11 @@ const Invoices = ({ charLimit = 4000 }) => {
           isDiscount: item.isDiscount || false,
         }));
         setRows(lineitems);
+        setSubtotal(result.invoiceTemplate.summary.subtotal);
+        setTaxRate(result.invoiceTemplate.summary.taxRate);
+        console.log(result.invoiceTemplate.summary.taxRate);
+        setTaxTotal(result.invoiceTemplate.summary.taxTotal);
+        setTotalAmount(result.invoiceTemplate.summary.total);
       })
       .catch((error) => console.error(error));
   };
@@ -448,7 +456,6 @@ const Invoices = ({ charLimit = 4000 }) => {
     calculateSubtotal();
   }, [rows]);
 
-  const INVOICE_NEW = process.env.REACT_APP_INVOICES_URL;
   const lineItems = rows.map((item) => ({
     productorService: item.productName, // Assuming productName maps to productorService
     description: item.description,
@@ -522,7 +529,6 @@ const Invoices = ({ charLimit = 4000 }) => {
       const data = await response.json();
 
       setBillingInvoice(data.invoice);
-      
     } catch (error) {
       console.error("Error fetching email templates:", error);
     }
@@ -538,12 +544,23 @@ const Invoices = ({ charLimit = 4000 }) => {
     setOpenMenuId(openMenuId === _id ? null : _id);
     setTempIdGet(_id);
   };
+  const handleEdit = (_id) => {
+    navigate("Updateinvoice/" + _id);
+  };
 
   const columns = useMemo(
     () => [
       {
         accessorKey: "invoicenumber",
         header: "Invoice Number",
+        Cell: ({ row }) => (
+          <Typography
+            sx={{ color: "#2c59fa", cursor: "pointer", fontWeight: 'bold' }}
+            onClick={() => handleEdit(row.original._id)}
+          >
+            {row.original.invoicenumber}
+          </Typography>
+        ),
       },
 
       {
@@ -554,7 +571,9 @@ const Invoices = ({ charLimit = 4000 }) => {
             <CiMenuKebab style={{ fontSize: "25px" }} />
             {openMenuId === row.original._id && (
               <Box sx={{ position: "absolute", zIndex: 1, backgroundColor: "#fff", boxShadow: 1, borderRadius: 1, p: 1, left: "30px", m: 2 }}>
-                <Typography sx={{ fontSize: "12px", fontWeight: "bold" }}>Edit</Typography>
+                <Typography sx={{ fontSize: "12px", fontWeight: "bold" }} onClick={() => handleEdit(row.original._id)}>
+                  Edit
+                </Typography>
                 <Typography sx={{ fontSize: "12px", color: "red", fontWeight: "bold" }} onClick={() => handleDelete(row.original._id)}>
                   Delete
                 </Typography>
@@ -1281,7 +1300,7 @@ const Invoices = ({ charLimit = 4000 }) => {
                   </Grid>
                 </Grid>
               </Box> */}
-<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <Box width="50%">
                   <Typography sx={{ color: "black" }}>Rate</Typography>
                   <TextField

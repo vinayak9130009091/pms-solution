@@ -446,7 +446,7 @@ const Accountupdate = ({ onClose, selectedAccount }) => {
       method: "DELETE",
       redirect: "follow",
     };
-    fetch(`http://127.0.0.1:7000/accounts/accountdetails/removecontactfromaccount/${selectedAccount._id}/${contactId}`, requestOptions)
+    fetch(`${ACCOUNT_API}/accounts/accountdetails/removecontactfromaccount/${selectedAccount._id}/${contactId}`, requestOptions)
       .then((response) => response.json())
       .then((result) => {
         handleContactUpdated();
@@ -506,7 +506,7 @@ const Accountupdate = ({ onClose, selectedAccount }) => {
       redirect: "follow",
     };
 
-    fetch(`http://127.0.0.1:7000/accounts/accountdetails/${selectedAccount._id}`, requestOptions)
+    fetch(`${ACCOUNT_API}/accounts/accountdetails/${selectedAccount._id}`, requestOptions)
       .then((response) => response.text())
       .then((result) => {
         console.log(result);

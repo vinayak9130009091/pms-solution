@@ -8,6 +8,8 @@ import { toast } from "react-toastify";
 
 const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallScreen }) => {
   const TAGS_API = process.env.REACT_APP_TAGS_TEMP_URL;
+  const CONTACT_API = process.env.REACT_APP_CONTACTS_URL;
+
   // State variables for form fields
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
@@ -65,11 +67,13 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
       // );
       // Flatten phoneNumbers array
       const flatPhoneNumbers = selectedContact.phoneNumbers?.flat() || [];
-      setPhoneNumbers(flatPhoneNumbers.map(phone => ({
+      setPhoneNumbers(
+        flatPhoneNumbers.map((phone) => ({
           id: Date.now() + Math.random(), // Improved unique ID generation
           phone,
-          isPrimary: false // Set based on your logic
-           })));
+          isPrimary: false, // Set based on your logic
+        }))
+      );
       const flatTags = selectedContact.tags?.[0] || [];
       setTagsNew(
         flatTags.map((tag) => ({
@@ -218,7 +222,7 @@ const ContactForm = ({ onContactUpdated, selectedContact, handleClose, isSmallSc
     };
     console.log(updatedContact);
     try {
-      const response = await fetch(`http://127.0.0.1:7000/contacts/${contactId}`, {
+      const response = await fetch(`${CONTACT_API}/contacts/${contactId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

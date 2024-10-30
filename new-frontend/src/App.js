@@ -77,6 +77,8 @@ import ActiveMember from "./Users/ActiveMember";
 import Deactivatemember from "./Users/DeactivateMember";
 import Stages from "./Pages/stagesAutomation";
 import FirmSettings from "./Settings/FirmSetting";
+import InvoiceUpdate from "./Billing/invoiceUpdate.js";
+
 const App = () => {
   return (
     <BrowserRouter>
@@ -95,6 +97,7 @@ const App = () => {
           <Route path="stages" element={<Stages />} />
           <Route path="addJobs" element={<CreateJob />} />
           <Route path="billing/Invoices" element={<Invoices />} />
+          <Route path="billing/Invoices/Updateinvoice/:_id" element={<InvoiceUpdate />} />
           <Route path="workflow/tasks" element={<WorkflowTask />} />
           <Route path="workflow/jobs" element={<Jobs />} />
           <Route path="workflow/pipelines" element={<Pipeline />} />

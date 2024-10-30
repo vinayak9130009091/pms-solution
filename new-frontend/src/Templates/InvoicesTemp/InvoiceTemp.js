@@ -15,6 +15,8 @@ import { RxCross2 } from "react-icons/rx";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import { MaterialReactTable, useMaterialReactTable } from "material-react-table";
 import CreatableSelect from "react-select/creatable";
+import Editor from "../Texteditor/Editor";
+
 const InvoiceTemp = () => {
   const INVOICE_API = process.env.REACT_APP_INVOICE_TEMP_URL;
   const SERVICE_API = process.env.REACT_APP_SERVICES_URL;
@@ -23,6 +25,11 @@ const InvoiceTemp = () => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const [showForm, setShowForm] = useState(false);
+  const [clientNote, setClientNote] = useState("");
+  const handleEditorChange = (content) => {
+    setClientNote(content);
+  };
+
   const handleCreateInvoiceTemp = () => {
     setShowForm(true);
   };
@@ -226,6 +233,8 @@ const InvoiceTemp = () => {
         taxTotal: taxTotal,
         total: totalAmount,
       },
+      clientNote: clientNote,
+
       active: "true",
     });
 
@@ -289,6 +298,8 @@ const InvoiceTemp = () => {
         taxTotal: taxTotal,
         total: totalAmount,
       },
+      clientNote: clientNote,
+
       active: "true",
     });
 
@@ -1296,6 +1307,13 @@ const InvoiceTemp = () => {
                           </Table>
                         </div>
                       </div>
+
+                      <Box sx={{ mb: 10, mt: 2 }}>
+                        <Typography variant="h6" mb={1}>
+                          Note to client
+                        </Typography>
+                        <Editor onChange={handleEditorChange} initialContent={clientNote} />
+                      </Box>
                     </Box>
                   </Grid>
                 </Grid>
